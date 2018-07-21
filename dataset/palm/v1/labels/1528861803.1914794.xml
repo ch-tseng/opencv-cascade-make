@@ -1,0 +1,26 @@
+<annotation>
+	<folder>images</folder>
+	<filename>1528861803.1914794.jpg</filename>
+	<path>E:\MicrosoftOneDrive\OneDrive\Working\gestureSensor\dataset\v1\images\1528861803.1914794.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>640</width>
+		<height>480</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>palm</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>329</xmin>
+			<ymin>54</ymin>
+			<xmax>450</xmax>
+			<ymax>211</ymax>
+		</bndbox>
+	</object>
+</annotation>
