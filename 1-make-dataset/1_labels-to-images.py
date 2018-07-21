@@ -9,11 +9,13 @@ from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_a
 folderCharacter = "/"  # \\ is for windows
 xmlFolder = "/home/chtseng/works/opencv-cascade/dataset/palm/v1/labels"
 imgFolder = "/home/chtseng/works/opencv-cascade/dataset/palm/v1/images"
-labelName = "palm"
+labelName = ""
 saveROIsPath = "dataset/positives"
+outputSize = (90, 90)
 imageKeepType = "jpg"
 generateNegativeSource = True
-negSourceOutput = "dataset/neg-Source"
+positiveDesc_file = "dataset/positives.info"
+negSourceOutput = "dataset/negSource"
 #useAugmentation = True
 #augCounts = 5  #create how many images for 1 ?
 
@@ -76,7 +78,8 @@ def saveROI( roiSavePath, imgFolder, xmlFilepath, labelGrep="", generateNeg=Fals
             #roi = roi[...,::-1]
             #get the label image from the source image
             roi = image[labelYstart[i]:labelH[i], labelXstart[i]:labelW[i]]
-            
+            roi = cv2.resize(roi,outputSize)
+
             roiFile = roiSavePath + folderCharacter + xml_filename + '_' + str(countLabels)+"."+imageKeepType
             cv2.imwrite(roiFile, roi)
 
@@ -84,33 +87,6 @@ def saveROI( roiSavePath, imgFolder, xmlFilepath, labelGrep="", generateNeg=Fals
                 cv2.rectangle(image, (labelXstart[i], labelYstart[i]), 
                     (labelXstart[i]+int(labelW[i]-labelXstart[i]), labelYstart[i]+int(labelH[i]-labelYstart[i])), (0,0,0), -1)
 
-            '''
-            if(useAugmentation==True):
-                roi = roi[...,::-1]
-                #roi_augFile = roiSavePath + folderCharacter + "aug_" + xml_filename + '_' + str(countLabels)
-                #Image augmentation
-                datagen = ImageDataGenerator(
-                    zca_whitening=False,
-                    rotation_range=180,
-                    #width_shift_range=0.2,
-                    #height_shift_range=0.2,
-                    shear_range=0.2,
-                    zoom_range=0.2,
-                    horizontal_flip=True,
-                    vertical_flip=True,
-                    fill_mode="nearest")
-
-            
-                x = img_to_array(roi)   # this is a Numpy array with shape (3, 150, 150)
-                x = x.reshape (( 1 ,) + x.shape)   # this is a Numpy array with shape (1, 3, 150, 150)
-                i =  0
-                for batch in datagen.flow(x, batch_size = 1 ,
-                    save_to_dir = roiSavePath, save_prefix = "aug_" + xml_filename, save_format = 'jpg' ):
-
-                    i +=  1
-                    if i >  augCounts:
-                        break   # otherwise the generator would loop indefinitely
-               '''
     if(generateNeg==True):
        negFile = negSourceOutput + folderCharacter + xml_filename + '_' + str(countLabels)+"."+imageKeepType
        cv2.imwrite(negFile, image)
@@ -159,3 +135,14 @@ with open(saveROIsPath + folderCharacter + "desc.txt", 'a') as the_file:
     the_file.write("Average W:H = {}:{} \n".format(avgW, avgH))	
 
 print("----> Average W:H = {}:{}".format(avgW, avgH ))
+
+with open(positiveDesc_file, 'a') as the_file:
+    for file in os.listdir(saveROIsPath):
+        filename, file_extension = os.path.splitext(file)
+        if(file_extension.lower()==".jpg" or file_extension.lower()==".png" or file_extension.lower()==".jpeg"):
+            #print(positiveFolder + "/" + file)
+            img = cv2.imread(saveROIsPath + "/" + file)
+            sizeimg = img.shape
+            the_file.write( "../" + saveROIsPath + "/" + file + '  1  0 0 ' + str(sizeimg[1]) + ' ' + str(sizeimg[0]) + '\n')
+
+the_file.close()

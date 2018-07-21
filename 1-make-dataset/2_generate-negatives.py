@@ -7,13 +7,13 @@ import numpy as np
 
 movePixels = 30
 resizeScale = 0.75
-negSize = (120, 120)
+negSize = (90, 90)
 imageKeepType = "jpg"
 folderCharacter = "/"  # \\ is for windows
 negSources = "dataset/negSource"
 negativeOutput = "dataset/negatives"
 
-imagesCount = 2000  #how many negative images you want?
+imagesCount = 3600  #how many negative images you want?
 #-----------------------------------------------------------------------------------------
 
 winW = negSize[0]

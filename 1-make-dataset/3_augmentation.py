@@ -10,7 +10,7 @@ imgFolder = "dataset/positives"
 outputSize = (90, 90)
 outputFolder = "dataset/aug_positives"
 imageKeepType = "jpg"
-numAugment = 3  #create how many images for 1 image?
+numAugment = 2  #create how many images for 1 image?
 
 aug_whitening = False
 aug_rotation = 180
