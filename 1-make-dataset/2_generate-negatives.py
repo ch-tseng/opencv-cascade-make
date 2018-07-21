@@ -5,8 +5,8 @@ import os.path
 import cv2
 import numpy as np
 
-movePixels = 30
-resizeScale = 0.75
+movePixels = 60
+resizeScale = 0.5
 negSize = (90, 90)
 imageKeepType = "jpg"
 folderCharacter = "/"  # \\ is for windows
@@ -46,7 +46,6 @@ if not os.path.exists(negativeOutput):
 i = 0
 for file in os.listdir(negSources):
     filename, file_extension = os.path.splitext(file)
-
     #if("." + imageKeepType == file_extension.lower()):
     if(file_extension.lower()==".jpg" or file_extension.lower()=="png" or file_extension.lower()=="jpeg"):
         image = cv2.imread(negSources + folderCharacter + file)
@@ -64,7 +63,8 @@ for file in os.listdir(negSources):
                 #cv2.imshow("Window", clone)
 
                 if(i < imagesCount):
-                    cv2.imwrite(negativeOutput+folderCharacter+str(time.time())+"."+imageKeepType, window)
+                    print(negativeOutput+folderCharacter+str(time.time())+str(i)+"."+imageKeepType)
+                    cv2.imwrite(negativeOutput+folderCharacter+str(time.time())+str(i)+"."+imageKeepType, window)
                     i += 1
                     print("#{} negative image saved.".format(i))
 
