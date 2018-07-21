@@ -7,9 +7,9 @@ from os.path import basename
 from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
 
 folderCharacter = "/"  # \\ is for windows
-xmlFolder = "/home/chtseng/works/opencv-cascade/dataset/palm/v1/labels"
-imgFolder = "/home/chtseng/works/opencv-cascade/dataset/palm/v1/images"
-labelName = ""
+xmlFolder = "../dataset/palm/v3/labels"
+imgFolder = "../dataset/palm/v3/images"
+labelName = "palm"
 saveROIsPath = "dataset/positives"
 outputSize = (90, 90)
 imageKeepType = "jpg"
@@ -83,11 +83,11 @@ def saveROI( roiSavePath, imgFolder, xmlFilepath, labelGrep="", generateNeg=Fals
             roiFile = roiSavePath + folderCharacter + xml_filename + '_' + str(countLabels)+"."+imageKeepType
             cv2.imwrite(roiFile, roi)
 
-            if(generateNeg==True):
+            if(generateNegativeSource==True):
                 cv2.rectangle(image, (labelXstart[i], labelYstart[i]), 
                     (labelXstart[i]+int(labelW[i]-labelXstart[i]), labelYstart[i]+int(labelH[i]-labelYstart[i])), (0,0,0), -1)
 
-    if(generateNeg==True):
+    if(generateNegativeSource==True):
        negFile = negSourceOutput + folderCharacter + xml_filename + '_' + str(countLabels)+"."+imageKeepType
        cv2.imwrite(negFile, image)
 

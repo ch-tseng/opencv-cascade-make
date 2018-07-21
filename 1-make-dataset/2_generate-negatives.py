@@ -13,7 +13,7 @@ folderCharacter = "/"  # \\ is for windows
 negSources = "dataset/negSource"
 negativeOutput = "dataset/negatives"
 
-imagesCount = 3600  #how many negative images you want?
+imagesCount = 4000  #how many negative images you want?
 #-----------------------------------------------------------------------------------------
 
 winW = negSize[0]
@@ -47,7 +47,8 @@ i = 0
 for file in os.listdir(negSources):
     filename, file_extension = os.path.splitext(file)
 
-    if("." + imageKeepType == file_extension.lower()):
+    #if("." + imageKeepType == file_extension.lower()):
+    if(file_extension.lower()==".jpg" or file_extension.lower()=="png" or file_extension.lower()=="jpeg"):
         image = cv2.imread(negSources + folderCharacter + file)
 
         # loop over the image pyramid
