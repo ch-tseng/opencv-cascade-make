@@ -22,6 +22,7 @@ negSourceOutput = "dataset/negSource"
 totalLabels = 0
 wLabels = 0
 hLabels = 0
+w_h_bg_excgange = 0
 
 def saveROI( roiSavePath, imgFolder, xmlFilepath, labelGrep="", generateNeg=False):
     global totalLabels, wLabels, hLabels, negSourceOutput
@@ -84,8 +85,13 @@ def saveROI( roiSavePath, imgFolder, xmlFilepath, labelGrep="", generateNeg=Fals
             cv2.imwrite(roiFile, roi)
 
             if(generateNegativeSource==True):
+                if(w_h_bg_excgange==0):
+                    bgColor = (0,0,0)
+                else:
+                    bgColor = (255,255,255)
+
                 cv2.rectangle(image, (labelXstart[i], labelYstart[i]), 
-                    (labelXstart[i]+int(labelW[i]-labelXstart[i]), labelYstart[i]+int(labelH[i]-labelYstart[i])), (0,0,0), -1)
+                    (labelXstart[i]+int(labelW[i]-labelXstart[i]), labelYstart[i]+int(labelH[i]-labelYstart[i])), bgColor, -1)
 
     if(generateNegativeSource==True):
        negFile = negSourceOutput + folderCharacter + xml_filename + '_' + str(countLabels)+"."+imageKeepType

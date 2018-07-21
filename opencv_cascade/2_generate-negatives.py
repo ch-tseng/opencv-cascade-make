@@ -58,8 +58,8 @@ for file in os.listdir(negSources):
                 if window.shape[0] != winH or window.shape[1] != winW:
                     continue
  
-                clone = layer.copy()
-                cv2.rectangle(clone, (x, y), (x + winW, y + winH), (0, 255, 0), 2)
+                #clone = layer.copy()
+                #cv2.rectangle(clone, (x, y), (x + winW, y + winH), (0, 255, 0), 2)
                 #cv2.imshow("Window", clone)
 
                 if(i < imagesCount):
