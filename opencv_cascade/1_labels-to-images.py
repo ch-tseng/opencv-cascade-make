@@ -87,15 +87,17 @@ def saveROI( roiSavePath, imgFolder, xmlFilepath, labelGrep="", generateNeg=Fals
             if(generateNegativeSource==True):
                 if(w_h_bg_excgange==0):
                     bgColor = (0,0,0)
+                    generateNegativeSource==False
                 else:
                     bgColor = (255,255,255)
+                    generateNegativeSource==True
 
-                cv2.rectangle(image, (labelXstart[i], labelYstart[i]), 
+                cv2.rectangle(image2, (labelXstart[i], labelYstart[i]), 
                     (labelXstart[i]+int(labelW[i]-labelXstart[i]), labelYstart[i]+int(labelH[i]-labelYstart[i])), bgColor, -1)
 
     if(generateNegativeSource==True):
        negFile = negSourceOutput + folderCharacter + xml_filename + '_' + str(countLabels)+"."+imageKeepType
-       cv2.imwrite(negFile, image)
+       cv2.imwrite(negFile, image2)
 
 
 
