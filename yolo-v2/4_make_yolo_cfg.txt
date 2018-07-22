@@ -1,0 +1,10 @@
+1. duplicated the tiny-yolo.cfg file, and made the following edits:
+
+    Line 2: set batch=24, this means we will be using 64 images for every training step
+    Line 3: set subdivisions=8, the batch will be divided by 8 to decrease GPU VRAM requirements. If you have a powerful GPU with loads of VRAM, this number can be decreased, or batch could be increased. The training step will throw a CUDA out of memory error so you can adjust accordingly.
+    Line 120: set classes=1, the number of categories we want to detect
+    Line 114: set filters=(classes + 5)*5 in our case filters=30
+
+2. download the pre-trained on Imagenet from https://pjreddie.com/media/files/darknet19_448.conv.23
+
+3. ./darknet detector train cfg.mis/obj.data cfg.mis/tiny-yolo.cfg darknet19_448.conv.23
