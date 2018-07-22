@@ -7,9 +7,9 @@ from os.path import basename
 from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
 
 folderCharacter = "/"  # \\ is for windows
-xmlFolder = "misoffice/labels"
-imgFolder = "misoffice/images"
-saveYoloPath = "misoffice/yolo"
+xmlFolder = "misoffice-actions/labels"
+imgFolder = "misoffice-actions/images"
+saveYoloPath = "misoffice-actions/yolo"
 classList = { "chair":0, "head": 1, "sitting":2, "standing": 3, "walking": 4 }
 
 if not os.path.exists(saveYoloPath):
@@ -70,10 +70,10 @@ def transferYolo( xmlFilepath, imgFilepath, labelGrep=""):
         for className in labelName:
             if(className==labelGrep or labelGrep==""):
                 classID = classList[className]
-                x = (labelXmin[i] + (labelXmax[i]-labelXmin[i])/2) / img_w 
-                y = (labelYmin[i] + (labelYmax[i]-labelYmin[i])/2) / img_h
-                w = (labelXmax[i]-labelXmin[i]) / img_w
-                h = (labelYmax[i]-labelYmin[i]) / img_h
+                x = (labelXmin[i] + (labelXmax[i]-labelXmin[i])/2) * 1.0 / img_w 
+                y = (labelYmin[i] + (labelYmax[i]-labelYmin[i])/2) * 1.0 / img_h
+                w = (labelXmax[i]-labelXmin[i]) * 1.0 / img_w
+                h = (labelYmax[i]-labelYmin[i]) * 1.0 / img_h
 
                 the_file.write(str(classID) + ' ' + str(x) + ' ' + str(y) + ' ' + str(w) + ' ' + str(h) + '\n')
                 i += 1
