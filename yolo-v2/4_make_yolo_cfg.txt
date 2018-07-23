@@ -1,3 +1,5 @@
+https://medium.com/@manivannan_data/how-to-train-yolov2-to-detect-custom-objects-9010df784f36
+
 1. duplicated the tiny-yolo.cfg file, and made the following edits:
 
     Line 2: set batch=24, this means we will be using 64 images for every training step
@@ -8,3 +10,5 @@
 2. download the pre-trained on Imagenet from https://pjreddie.com/media/files/darknet19_448.conv.23
 
 3. ./darknet detector train cfg.mis/obj.data cfg.mis/tiny-yolo.cfg darknet19_448.conv.23
+
+4. ./darknet detector test ../misoffice/cfg.mis/obj.data ../misoffice/cfg.mis/tiny-yolo.cfg ../misoffice/tiny-yolo_18200.weights ../misoffice/test-images/csi_1600x1600_20180

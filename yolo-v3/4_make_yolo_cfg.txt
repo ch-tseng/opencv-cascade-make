@@ -25,3 +25,6 @@ https://medium.com/@manivannan_data/how-to-train-yolov3-to-detect-custom-objects
 2. download the pre-trained on Imagenet from https://pjreddie.com/media/files/darknet53.conv.74
 
 3. /media/sf_VMshare/yolo/darknet/darknet detector train cfg/obj.data cfg/yolov3-tiny.cfg darknet53.conv.74
+
+4. ./darknet detector test ../misoffice/cfg.mis/obj.data ../misoffice/cfg.mis/tiny-yolo.cfg ../misoffice/tiny-yolo_18200.weights ../misoffice/test-images/csi_1600x1600_20180
+
