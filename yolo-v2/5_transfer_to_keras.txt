@@ -1,0 +1,5 @@
+git clone https://github.com/allanzelener/yad2k.git
+cd yad2k/
+pip install numpy h5py pillow
+./yad2k.py ../opencv-cascade/yolo-v2/cfg/tiny-yolo.cfg /media/sf_VMshare/yolo/misoffice/tiny-yolo_18200.weights misoffice.h5
+

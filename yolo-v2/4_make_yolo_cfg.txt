@@ -11,4 +11,9 @@ https://medium.com/@manivannan_data/how-to-train-yolov2-to-detect-custom-objects
 
 3. ./darknet detector train cfg.mis/obj.data cfg.mis/tiny-yolo.cfg darknet19_448.conv.23
 
-4. ./darknet detector test ../misoffice/cfg.mis/obj.data ../misoffice/cfg.mis/tiny-yolo.cfg ../misoffice/tiny-yolo_18200.weights ../misoffice/test-images/csi_1600x1600_20180
+4.  cp -pr /media/sf_VMshare/yolo/darknet/data ./
+    /media/sf_VMshare/yolo/darknet/darknet detector test cfg/obj.data cfg/tiny-yolo.cfg tiny-yolo_18200.weights misoffice/images/csi_1600x1600_20180503_091805.jpg
+
+5.  play on a video
+    /media/sf_VMshare/yolo/darknet/darknet detector demo cfg.mis/obj.data cfg.mis/tiny-yolo.cfg misoffice/misoffice.weights /media/sf_VMshare/Videos/misBlock/misblock_800x800_5.mp4 
+
