@@ -4,6 +4,7 @@ import dlib
 import numpy
 from imutils.face_utils import FaceAligner
 from imutils.face_utils import rect_to_bb
+from align_dlib import AlignDlib
 import imutils
 
 #-----------------------------------------------------------
@@ -12,18 +13,42 @@ imgOutputType = "jpg"
 sourceFolder = "dataset/peoples"
 outputFaces = "dataset/faces"
 outputFaces_aligned = "dataset/faces_aligned"
-faceDetectType = "cascade"   #cascade or dlib
+faceDetectType = "dlib"   #cascade or dlib
 #for Cascade type
 face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 cascade_scale = 1.2
 cascade_neighbors = 10
 
+face_outputsize_aligned = 120
 dlib_detectorRatio = 2
+faceLandmarkModel = "shape_predictor_68_face_landmarks.dat"
+align_dlib = AlignDlib(faceLandmarkModel)
 
 folderCharacter = "/"  # \\ is for windows
 #----------------------------------------------------------------
+detector = dlib.get_frontal_face_detector()
 
-def getFaces_dlib(img, folder, imgname):
+
+def alignFace_dlib(image, imgfile):
+    bbs = align_dlib.getAllFaceBoundingBoxes(image)
+    i = 0
+    for bb in bbs:
+        aligned = align_dlib.align(face_outputsize_aligned, image, bb, landmarkIndices=AlignDlib.INNER_EYES_AND_BOTTOM_LIP, scale=0.5)
+        if aligned is not None:
+            aligned_rgb = cv2.cvtColor(aligned, cv2.COLOR_BGR2RGB)
+            gray = cv2.cvtColor(aligned_rgb, cv2.COLOR_BGR2GRAY)
+            rectB = detector( gray , 2)
+
+            i = 0 
+            for rectFinal in rectB:
+                (x2, y2, w2, h2) = rect_to_bb(rectFinal)
+                face2 = aligned[y2:y2 + h2, x2:x2 + w2]
+                #face2 = face2[...,::-1]
+                print("aligned:", imgfile)
+                cv2.imwrite(imgfile , face2)
+                i += 1
+
+def getFaces_dlib(img, label, imgname):
     global dlib_detectorRatio
 
     detector = dlib.get_frontal_face_detector()
@@ -36,8 +61,10 @@ def getFaces_dlib(img, folder, imgname):
         (x, y, w, h) = rect_to_bb(rect)
         if(w>minFaceSize[0] and h>minFaceSize[1]):
             face = img[y:y+h, x:x+w]
-            imgfile = folder + folderCharacter + imgname + "_" + str(i) + "." + imgOutputType
+            imgfile = outputFaces + folderCharacter + label + folderCharacter + imgname + "_" + str(i) + "." + imgOutputType
             cv2.imwrite(imgfile , face)
+            imgfile = outputFaces_aligned + folderCharacter + label + folderCharacter + imgname + "_" + str(i) + "." + imgOutputType
+            alignFace_dlib(img, imgfile)
             i += 1
 
 
@@ -82,12 +109,15 @@ for folders in glob.glob(sourceFolder+folderCharacter + "*"):
             if(image_extension == ".jpg" or image_extension==".jpeg" or image_extension==".png" or image_extension==".bmp"):
                 image = cv2.imread(folders + folderCharacter + filename)
 
-                outputFolder = outputFaces + folderCharacter + label
-                if not os.path.exists(outputFolder):
-                    os.makedirs(outputFolder)
+                if not os.path.exists(outputFaces+folderCharacter+label):
+                    os.makedirs(outputFaces+folderCharacter+label)
+
+                if not os.path.exists(outputFaces_aligned+folderCharacter+label):
+                    os.makedirs(outputFaces_aligned+folderCharacter+label)
+
 
                 if(faceDetectType=="cascade"):
-                    getFaces_cascade(image, outputFolder, image_name)
+                    getFaces_cascade(image, label, image_name)
                 else:
-                    getFaces_dlib(image, outputFolder, image_name)
+                    getFaces_dlib(image, label, image_name)
 
