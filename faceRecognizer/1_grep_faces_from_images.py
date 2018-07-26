@@ -19,15 +19,37 @@ face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 cascade_scale = 1.2
 cascade_neighbors = 10
 
-face_outputsize_aligned = 120
+alignType = "imutils"  #dlib or imutils
+face_outputsize_aligned = 90  #size for aligned face
 dlib_detectorRatio = 2
 faceLandmarkModel = "shape_predictor_68_face_landmarks.dat"
-align_dlib = AlignDlib(faceLandmarkModel)
 
 folderCharacter = "/"  # \\ is for windows
 #----------------------------------------------------------------
 detector = dlib.get_frontal_face_detector()
+align_dlib = AlignDlib(faceLandmarkModel)
+predictor = dlib.shape_predictor(faceLandmarkModel)
+fa = FaceAligner(predictor, desiredFaceWidth=face_outputsize_aligned)
 
+def alignFace_imutils(image, imgfile):
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    rects = detector(gray, 2)
+
+    for rect in rects:
+        faceAligned = fa.align(image, gray, rect)
+
+        gray2 = cv2.cvtColor(faceAligned, cv2.COLOR_BGR2GRAY)
+        rectB = detector( gray2 , 2)
+
+        i = 0 
+        for rectFinal in rectB:
+            (x2, y2, w2, h2) = rect_to_bb(rectFinal)
+            if(w2>minFaceSize[0] and h2>minFaceSize[1]):
+                face2 = faceAligned[y2:y2 + h2, x2:x2 + w2]
+                #face2 = face2[...,::-1]
+                print("aligned:", imgfile)
+                cv2.imwrite(imgfile , face2)
+                i += 1
 
 def alignFace_dlib(image, imgfile):
     bbs = align_dlib.getAllFaceBoundingBoxes(image)
@@ -42,11 +64,12 @@ def alignFace_dlib(image, imgfile):
             i = 0 
             for rectFinal in rectB:
                 (x2, y2, w2, h2) = rect_to_bb(rectFinal)
-                face2 = aligned[y2:y2 + h2, x2:x2 + w2]
-                #face2 = face2[...,::-1]
-                print("aligned:", imgfile)
-                cv2.imwrite(imgfile , face2)
-                i += 1
+                if(w2>minFaceSize[0] and h2>minFaceSize[1]):
+                    face2 = aligned[y2:y2 + h2, x2:x2 + w2]
+                    #face2 = face2[...,::-1]
+                    print("aligned:", imgfile)
+                    cv2.imwrite(imgfile , face2)
+                    i += 1
 
 def getFaces_dlib(img, label, imgname):
     global dlib_detectorRatio
@@ -64,7 +87,12 @@ def getFaces_dlib(img, label, imgname):
             imgfile = outputFaces + folderCharacter + label + folderCharacter + imgname + "_" + str(i) + "." + imgOutputType
             cv2.imwrite(imgfile , face)
             imgfile = outputFaces_aligned + folderCharacter + label + folderCharacter + imgname + "_" + str(i) + "." + imgOutputType
-            alignFace_dlib(img, imgfile)
+
+            if(alignType=="dlib"):
+                alignFace_dlib(img, imgfile)
+            else:
+                alignFace_imutils(img, imgfile)
+
             i += 1
 
 
@@ -86,6 +114,12 @@ def getFaces_cascade(img, folder, imgname):
             face = img[y:y+h, x:x+w]
             imgfile = folder + folderCharacter + imgname + "_" + str(i) + "." + imgOutputType
             cv2.imwrite(imgfile , face)
+
+            if(alignType=="dlib"):
+                alignFace_dlib(img, imgfile)
+            else:
+                alignFace_imutils(img, imgfile)
+
             i += 1
 
 #=====================================================
