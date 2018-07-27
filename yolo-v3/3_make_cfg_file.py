@@ -1,7 +1,7 @@
 import os
 
-classes = 5
-classList = ( "chair", "head", "sitting", "standing", "walking" )  #Same with you defined in 1_labels_to_yolo_format.py
+classes = 6
+classList = { "palm0", "palm1", "palm2", "palm3", "palm4", "palm5" }  #Same with you defined in 1_labels_to_yolo_format.py
 folderCharacter = "/"  # \\ is for windows
 cfgFolder = "cfg"
 cfg_obj_names = "obj.names"

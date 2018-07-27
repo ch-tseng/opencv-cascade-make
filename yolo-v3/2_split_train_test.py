@@ -3,9 +3,9 @@ import glob, os
 import os.path
 
 testRatio = 0.2
-imageFolder = "misoffice/yolo"
-outputTrainFile = "misoffice/train.txt"
-outputTestFile = "misoffice/test.txt"
+imageFolder = "dataset/palm_num/yolo"
+outputTrainFile = "dataset/palm_num/train.txt"
+outputTestFile = "dataset/palm_num/test.txt"
 folderCharacter = "/"  # \\ is for windows
 
 

@@ -7,10 +7,10 @@ from os.path import basename
 from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
 
 folderCharacter = "/"  # \\ is for windows
-xmlFolder = "misoffice-actions/labels"
-imgFolder = "misoffice-actions/images"
-saveYoloPath = "misoffice-actions/yolo"
-classList = { "chair":0, "head": 1, "sitting":2, "standing": 3, "walking": 4 }
+xmlFolder = "dataset/palm_num/labels"
+imgFolder = "dataset/palm_num/images"
+saveYoloPath = "dataset/palm_num/yolo"
+classList = { "palm0":0, "palm1": 1, "palm2":2, "palm3": 3, "palm4": 4, "palm5": 5 }
 
 if not os.path.exists(saveYoloPath):
     os.makedirs(saveYoloPath)
