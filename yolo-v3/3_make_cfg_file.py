@@ -1,7 +1,7 @@
 import os
 
 classes = 6
-classList = { "palm0", "palm1", "palm2", "palm3", "palm4", "palm5" }  #Same with you defined in 1_labels_to_yolo_format.py
+classList = { "palm_0", "palm_1", "palm_2", "palm_3", "palm_4", "palm_5" }  #Same with you defined in 1_labels_to_yolo_format.py
 folderCharacter = "/"  # \\ is for windows
 cfgFolder = "cfg"
 cfg_obj_names = "obj.names"
@@ -12,10 +12,10 @@ if not os.path.exists(cfgFolder):
 
 with open(cfgFolder + folderCharacter + cfg_obj_data, 'w') as the_file:
     the_file.write("classes= " + str(classes) + "\n")
-    the_file.write("train  = train.txt\n")
-    the_file.write("valid  = test.txt\n")
-    the_file.write("names = obj.names\n")
-    the_file.write("backup = backup/")
+    the_file.write("train  = " + cfgFolder + folderCharacter + "train.txt\n")
+    the_file.write("valid  = " + cfgFolder + folderCharacter + "test.txt\n")
+    the_file.write("names = " + cfgFolder + folderCharacter + "obj.names\n")
+    the_file.write("backup = weights/")
 
 the_file.close()
 

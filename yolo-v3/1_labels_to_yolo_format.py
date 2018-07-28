@@ -10,7 +10,7 @@ folderCharacter = "/"  # \\ is for windows
 xmlFolder = "dataset/palm_num/labels"
 imgFolder = "dataset/palm_num/images"
 saveYoloPath = "dataset/palm_num/yolo"
-classList = { "palm0":0, "palm1": 1, "palm2":2, "palm3": 3, "palm4": 4, "palm5": 5 }
+classList = { "palm_0":0, "palm_1": 1, "palm_2":2, "palm_3": 3, "palm_4": 4, "palm_5": 5 }
 
 if not os.path.exists(saveYoloPath):
     os.makedirs(saveYoloPath)
