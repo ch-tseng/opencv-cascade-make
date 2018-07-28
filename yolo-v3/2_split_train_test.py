@@ -3,13 +3,15 @@ import glob, os
 import os.path
 
 testRatio = 0.2
+cfgFolder = "cfg"
 imageFolder = "dataset/palm_num/yolo"
-outputTrainFile = "dataset/palm_num/train.txt"
-outputTestFile = "dataset/palm_num/test.txt"
+outputTrainFile = cfgFolder + "/train.txt"
+outputTestFile = cfgFolder + "/test.txt"
 folderCharacter = "/"  # \\ is for windows
 
-
 fileList = []
+if not os.path.exists(cfgFolder):
+    os.makedirs(cfgFolder)
 
 for file in os.listdir(imageFolder):
     filename, file_extension = os.path.splitext(file)
