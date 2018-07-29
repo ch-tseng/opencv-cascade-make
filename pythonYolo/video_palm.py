@@ -10,7 +10,7 @@ if __name__ == "__main__":
     net = Detector(bytes("cfg.palm/yolov3.cfg", encoding="utf-8"), bytes("cfg.palm/yolov3_9900.weights", encoding="utf-8"), 0,
                    bytes("cfg.palm/obj.data", encoding="utf-8"))
 
-    cap = cv2.VideoCapture("cfg.palm/IMG_3558.m4v")
+    cap = cv2.VideoCapture("cfg.palm/IMG_3571.m4v")
     # Get current width of frame
     width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)   # float
     # Get current height of frame
@@ -39,10 +39,24 @@ if __name__ == "__main__":
                 label = cat.decode('utf-8')
                 print("{}:{}".format(cat, score))
 
+                if(label=="palm_0"):
+                    label = "0"
+                elif(label=="palm_1"):
+                    label = "1"
+                elif(label=="palm_2"):
+                    label = "2"
+                elif(label=="palm_3"):
+                    label = "3"
+                elif(label=="palm_4"):
+                    label = "4"
+                elif(label=="palm_5"):
+                    label = "5"
+
+
                 if(label!="head"):
                     x, y, w, h = bounds
-                    cv2.rectangle(frame, (int(x-w/2),int(y-h/2)),(int(x+w/2),int(y+h/2)),(255,0,0))
-                    cv2.putText(frame, label, (int(x), int(y)), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 255, 0))
+                    cv2.rectangle(frame, (int(x-w/2),int(y-h/2)),(int(x+w/2),int(y+h/2)),(0,255,0))
+                    cv2.putText(frame, label, (int(x), int(y)), cv2.FONT_HERSHEY_COMPLEX, 1.7, (0, 0, 255))
 
             # Saves for video
             out.write(frame)
