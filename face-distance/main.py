@@ -3,7 +3,7 @@ import imutils
 import numpy as np
 import datetime
 
-faceWidth = 2  # cm
+faceWidth = 0  # cm
 face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 cascade_scale = 1.2
 cascade_neighbors = 10
@@ -74,13 +74,15 @@ while True:
 
         if(w>0 and h>0):
             print("Please click o to set the distance.")
-            keycode = cv2.waitKey(0) & 0xFF
+            keycode = cv2.waitKey(3000) & 0xFF
             print("keycode=",keycode)
 
             if keycode == ord('o'):
                 #scaleRatio = (w * 0.1) / faceWidth
                 facePixel = w
+                faceWidth = float(input('Your head width (cm): '))
                 print("facePixel=", facePixel)
+                print("faceWidth=", faceWidth)
         else:
             cv2.waitKey(1)
 
