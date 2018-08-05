@@ -3,18 +3,21 @@ import imutils
 import numpy as np
 import datetime
 
-faceWidth = 0  # cm
-face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+distanceActual = 0  # cm
+#face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+#face_cascade = cv2.CascadeClassifier('haarcascade_eye.xml')
+face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_alt.xml')
 cascade_scale = 1.2
-cascade_neighbors = 10
-minFaceSize = (30, 30)
+cascade_neighbors = 12
+minFaceSize = (2, 2)
 evidenceSavePath = "picEvidence"
 folderCharacter = "/"
 imgOutputType = "jpg"
 cam_id = 0
-cam_resolution = (1024,768)
+cam_resolution = (1080,768)
 
-camera = cv2.VideoCapture(cam_id)
+#camera = cv2.VideoCapture(cam_id)
+camera = cv2.VideoCapture("/media/sf_VMshare/walk/IMG_3641.m4v")
 camera.set(cv2.CAP_PROP_FRAME_WIDTH, cam_resolution[0])
 camera.set(cv2.CAP_PROP_FRAME_HEIGHT, cam_resolution[1])
 
@@ -34,12 +37,19 @@ def getFaces_cascade(img, rtype):
         minSize=minFaceSize,
         flags=cv2.CASCADE_SCALE_IMAGE
     )
-    
+
     i = 0
     for (x,y,w,h) in faces:
         if(w>minFaceSize[0] and h>minFaceSize[1]):
             if(facePixel>0):
-                print("Face distance:", (faceWidth * 1.0 / facePixel ) * (w-facePixel) )
+                distance = round((W * F) / w, 1)
+                #pixel_1 = (distanceActual * 1.0 / facePixel) * (w/(w-facePixel+1) )
+                #move_cm = (w-facePixel) * pixel_1
+                #distance = round(distanceActual - move_cm ,1)
+                #print("1 pixel:{}, fixed pixel:{}, face now:{}, moved:{}, distance:{}".format(pixel_1, distanceActual, w, move_cm, distance) )
+
+
+                putText(img, "distance: "+str(distance) + " cm", 30, 80, color=(0,255,0), thickness=4, size=2.5)
 
             cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,0),3)
             i += 1
@@ -50,9 +60,9 @@ def getFaces_cascade(img, rtype):
 
         else:
             imgname = datetime.datetime.now().strftime("%y-%m-%d_%H-%M-%S")
-            putText(img, datetime.datetime.now().strftime("%y/%m/%d %H:%M:%S"), 5, 40, (255,35,35), thickness=2, size=1)  
+            #putText(img, datetime.datetime.now().strftime("%y/%m/%d %H:%M:%S"), 5, 40, (255,35,35), thickness=2, size=1)  
             imgfile = evidenceSavePath + folderCharacter + imgname + "." + imgOutputType
-            cv2.imwrite(imgfile , img)
+            #cv2.imwrite(imgfile , img)
             return img
 
     else:
@@ -78,11 +88,15 @@ while True:
             print("keycode=",keycode)
 
             if keycode == ord('o'):
-                #scaleRatio = (w * 0.1) / faceWidth
+                #scaleRatio = (w * 0.1) / distanceActual
                 facePixel = w
-                faceWidth = float(input('Your head width (cm): '))
-                print("facePixel=", facePixel)
-                print("faceWidth=", faceWidth)
+                distanceActual = float(input('Your head width (cm): '))
+                P = distanceActual # distance cm
+                W = 22 # face width average 20cm
+                D = w # facepixels
+                F = (P * D) / W
+
+                print("Focal length=", facePixel)
         else:
             cv2.waitKey(1)
 
