@@ -32,6 +32,9 @@ def yoloPython(img):
         start_x = int(x - (w/2))
         end_x = start_x + boundbox.shape[1]
         print(start_y, end_y, start_x, end_x)
+        if(start_y<0): start_y=0
+        if(start_x<0): start_x=0
+        boundbox = imutils.resize(boundbox, width=end_x-start_x, height=end_y-start_y)
         img[ start_y:end_y, start_x:end_x] = boundbox
 
     return img
@@ -54,5 +57,3 @@ while True:
     r, img = cap.read()
     img = yoloPython(img)
     out.write(img)
-
-
