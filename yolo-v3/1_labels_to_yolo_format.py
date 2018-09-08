@@ -7,10 +7,10 @@ from os.path import basename
 from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
 
 folderCharacter = "/"  # \\ is for windows
-xmlFolder = "dataset/palm_num/labels"
-imgFolder = "dataset/palm_num/images"
-saveYoloPath = "dataset/palm_num/yolo"
-classList = { "palm_0":0, "palm_1": 1, "palm_2":2, "palm_3": 3, "palm_4": 4, "palm_5": 5 }
+xmlFolder = "/export/home/digits/jupyter/chtseng/opencv-cascade-make/dataset/insects/labels"
+imgFolder = "/export/home/digits/jupyter/chtseng/opencv-cascade-make/dataset/insects/images"
+saveYoloPath = "/export/home/digits/jupyter/chtseng/opencv-cascade-make/dataset/insects/yolo"
+classList = { "0_ladybug": 0, "1_Camellia":1, "2_Pieridae":2, "3_Lindinger":3, "4_Papilio_1_4": 4, "5_Papilio_5": 5, "6_ant": 6 }
 
 if not os.path.exists(saveYoloPath):
     os.makedirs(saveYoloPath)
@@ -65,7 +65,7 @@ def transferYolo( xmlFilepath, imgFilepath, labelGrep=""):
     yoloFilename = saveYoloPath + folderCharacter + img_filename + ".txt"
     print("writeing to {}".format(yoloFilename))
 
-    with open(yoloFilename, 'a') as the_file:
+    with open(yoloFilename, 'w') as the_file:
         i = 0
         for className in labelName:
             if(className==labelGrep or labelGrep==""):
