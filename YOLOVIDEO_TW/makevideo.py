@@ -2,7 +2,7 @@ from pydarknet import Detector, Image
 import imutils
 import cv2
 
-video_file = "cfg.loofah/IMG_6850.m4v"
+video_file = "/media/sf_VMshare/IMG_7155.MOV"
 output_video = "loofah.avi"
 
 def yoloPython(img):
@@ -12,13 +12,13 @@ def yoloPython(img):
     for cat, score, bounds in results:
         cat = cat.decode("utf-8")
         if(cat == "flower"):
-            boundcolor = (2, 233, 247)
+            boundcolor = (252, 172, 1)
         elif(cat == "loofah"):
-            boundcolor = (1, 251, 42)
+            boundcolor = (1, 237, 252)
         elif(cat == "loofah_wrapped"):
-            boundcolor = (1, 251, 42)
+            boundcolor = (1, 237, 252)
         elif(cat == "loofah_under"):
-            boundcolor = (1, 251, 42)
+            boundcolor = (1, 237, 252)
 
         x, y, w, h = bounds
         cv2.rectangle(img, (int(x - w / 2), int(y - h / 2)), (int(x + w / 2), 
@@ -26,15 +26,16 @@ def yoloPython(img):
 
         boundbox = cv2.imread("images/"+cat+".png")
         print("read:","images/"+cat+".png")
-        #img[ int(y-h/2):int(y-h/2)+boundbox.shape[0], int(x-w/2):int(x-w/2)+boundbox.shape[1]] = boundbox
-        start_y = int(y - (h/2))
-        end_y = start_y + boundbox.shape[0]
-        start_x = int(x - (w/2))
-        end_x = start_x + boundbox.shape[1]
-        print(start_y, end_y, start_x, end_x)
+        print("boundbox:", boundbox.shape)
+        start_x=int(x - w / 2)
+        start_y=int(y - h / 2)-boundbox.shape[0]
+        end_x=start_x+boundbox.shape[1]
+        end_y=start_y+boundbox.shape[0]
+
         if(start_y<0): start_y=0
         if(start_x<0): start_x=0
-        boundbox = imutils.resize(boundbox, width=end_x-start_x, height=end_y-start_y)
+        print("start_x={}, start_y={}, end_x={}, end_y={}".format(start_x,start_y,end_x,end_y))
+        #boundbox = imutils.resize(boundbox, width=newshape[1], height=newshape[0])
         img[ start_y:end_y, start_x:end_x] = boundbox
 
     return img
