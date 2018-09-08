@@ -3,8 +3,8 @@ import cv2 as cv
 #itialize the parameters
 confThreshold = 0.5  #Confidence threshold
 nmsThreshold = 0.4   #Non-maximum suppression threshold
-inpWidth = 416       #Width of network's input image
-inpHeight = 416      #Height of network's input image
+inpWidth = 608       #Width of network's input image
+inpHeight = 608      #Height of network's input image
 
 # Load names of classes
 classesFile = "cfg.loofah/obj.names";

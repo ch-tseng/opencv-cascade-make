@@ -1,0 +1,35 @@
+import cv2
+import numpy as np
+FILE_OUTPUT = 'output/detected.png'
+
+image = ""
+model_path = 'cfg.loofah/yolov3_10000.weights'
+cfg_path = 'cfg.loofah/yolov3.cfg'
+yolo_net = cv2.dnn.readNet(model_path, cfg_path, 'darknet')
+i = 0
+
+while True:
+    img = cap.read()
+    print("frame #{}".format(i))
+    if flag:
+        yolo_net.setInput(cv2.dnn.blobFromImage(img, 1, (960, 960), (127.5, 127.5, 127.5), False, False))
+        cvOut = yolo_net.forward()
+        for detection in cvOut:
+            confidence = np.max(detection[5:])
+            if confidence > 0:
+                classIndex = np.argwhere(detection == confidence)[0][0] - 5
+                x_center = detection[0] * cols
+                y_center = detection[1] * rows
+                width = detection[2] * cols
+                height = detection[3] * rows
+                start = (int(x_center - width/2), int(y_center - height/2))
+                end = (int(x_center + width/2), int(y_center + height/2))
+                cv2.rectangle(img,start, end , (23, 230, 210), thickness=2)
+                cv2.imwrite('output/show'+str(i)+".jpg", img)
+
+
+        out.write(img)
+        i +=1
+
+    else:
+        break
