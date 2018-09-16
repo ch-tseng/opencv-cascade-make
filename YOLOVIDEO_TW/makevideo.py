@@ -3,7 +3,7 @@ import imutils
 import cv2
 
 video_file = "/media/sf_ShareFolder/videos/p_5.m4v"
-output_video = "/media/sf_ShareFolder/pepper_1.avi"
+output_video = "/media/sf_ShareFolder/pepper_img.avi"
 
 def yoloPython(img):
     img2 = Image(img)
@@ -30,7 +30,6 @@ def yoloPython(img):
             int(y + h / 2)), boundcolor, thickness=3)
 
         boundbox = cv2.imread("cfg.pepper/images/"+cat+".jpg")
-        print("read:","images/"+cat+".jpg")
         print("boundbox:", boundbox.shape)
         start_x=int(x - w / 2)
         start_y=int(y - h / 2)-boundbox.shape[0]
@@ -45,12 +44,14 @@ def yoloPython(img):
         end_x=start_x+boundbox.shape[1]
         end_y=start_y+boundbox.shape[0]
 
-        print("start_x={}, start_y={}, end_x={}, end_y={}".format(start_x,start_y,end_x,end_y))
+        print("(end_x-start_x)={}, (end_y-start_y)={}, img.shape[1]={}, img.shape[0]={}".format((end_x-start_x),(end_y-start_y),boundbox.shape[1],boundbox.shape[0]))
 
-        if((end_x-start_x)!=img.shape[1]) or ((end_y-start_y)!=img.shape[0]):
+        if((end_x-start_x)!=boundbox.shape[1]) or ((end_y-start_y)!=boundbox.shape[0]):
+            print("add text: ",labelName)
             cv2.putText(img, labelName, (int(x), int(y)), cv2.FONT_HERSHEY_COMPLEX, 1.6, boundcolor, 2)
 
         else:
+            print("read:","images/"+cat+".jpg")
             img[ start_y:end_y, start_x:end_x] = boundbox
 
     return img
