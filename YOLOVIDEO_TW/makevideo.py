@@ -46,13 +46,13 @@ def yoloPython(img):
 
         print("(end_x-start_x)={}, (end_y-start_y)={}, img.shape[1]={}, img.shape[0]={}".format((end_x-start_x),(end_y-start_y),boundbox.shape[1],boundbox.shape[0]))
 
-        if((end_x-start_x)!=boundbox.shape[1]) or ((end_y-start_y)!=boundbox.shape[0]):
+        try:
+            img[ start_y:end_y, start_x:end_x] = boundbox
+            print("read:","images/"+cat+".jpg")
+
+        except:
             print("add text: ",labelName)
             cv2.putText(img, labelName, (int(x), int(y)), cv2.FONT_HERSHEY_COMPLEX, 1.6, boundcolor, 2)
-
-        else:
-            print("read:","images/"+cat+".jpg")
-            img[ start_y:end_y, start_x:end_x] = boundbox
 
     return img
 
