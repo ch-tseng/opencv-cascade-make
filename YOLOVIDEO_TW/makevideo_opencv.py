@@ -179,7 +179,7 @@ def drawPred(classId, conf, left, top, right, bottom, orgFrame):
         cv.imwrite("/media/sf_shares/output/colors/" + color2 + "_" + str(time.time()) + ".jpg", orgFrame[ top:bottom, left:right])
 
         # Draw a bounding box.
-        cv.rectangle(frame, (left, top), (right, bottom), colorDetect, 3)
+        cv.rectangle(frame, (left, top), (right, bottom), labelColor, 3)
 
         #cv.putText(frame, color2, (center_x, center_y), cv.FONT_HERSHEY_COMPLEX, 1.8, colorDetect, 2)
 
