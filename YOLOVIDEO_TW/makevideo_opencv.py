@@ -3,6 +3,7 @@ import argparse
 import cv2 as cv
 import numpy as np
 import webcolors
+from colorDetect import DominantColors
 
 # Initialize the parameters
 confThreshold = 0.5  #Confidence threshold
@@ -57,7 +58,20 @@ def getROI_Color(roi):
 
     #actual_name, closest_name = get_colour_name((mean_blue, mean_green, mean_red))
 
-    return (actual_name, closest_name, (mean_blue, mean_green, mean_red))
+    return actual_name, closest_name, (mean_blue, mean_green, mean_red)
+#-----------------------------------------------------------------
+
+def getROI_mainColor(roi):
+    dc = DominantColors(roi, 2) 
+    colors = dc.dominantColors()
+
+    r = int(colors[0][2])
+    g = int(colors[0][1])
+    b = int(colors[0][0])
+    actual_name, closest_name = get_colour_name((b,g,r))
+    print((r,g,b))
+
+    return actual_name, closest_name, (b,g,r)
 
 # Get the names of the output layers
 def getOutputsNames(net):
@@ -130,44 +144,52 @@ def drawPred(classId, conf, left, top, right, bottom, orgFrame):
     end_y=start_y+boundbox.shape[0]
     center_x = left + int((right-left)/2)
     center_y = top + int((bottom-top)/2)
-    print("(end_x-start_x)={}, (end_y-start_y)={}, img.shape[1]={}, img.shape[0]={}".format((end_x-start_x),(end_y-start_y),boundbox.shape[1],boundbox.shape[0]))
+    
+    #print("(end_x-start_x)={}, (end_y-start_y)={}, img.shape[1]={}, img.shape[0]={}".format((end_x-start_x),(end_y-start_y),boundbox.shape[1],boundbox.shape[0]))
     #(color1, color2, colorDetect) = getROI_Color(frame[ start_y:end_y, start_x:end_x])
-    if(center_x-10<0):
+    
+    pad = 15
+    if(center_x-pad<0):
         roi_x1 = 0
     else:
-        roi_x1= center_x - 10
+        roi_x1= center_x - pad
 
-    if(center_y-10<0): 
+    if(center_y-pad<0): 
         roi_y1 = 0
     else:
-        roi_y1= center_y - 10
+        roi_y1= center_y - pad
 
     if(center_x+10>frame.shape[1]): 
         roi_x2 = frame.shape[1]
     else:
-        roi_x2= center_x + 10
+        roi_x2= center_x + pad
 
     if(center_y+10>frame.shape[0]): 
         roi_y2 = frame.shape[0]
     else:
-        roi_y2= center_y + 10
+        roi_y2= center_y + pad
 
-    (color1, color2, colorDetect) = getROI_Color(orgFrame[ roi_y1:roi_y2, roi_x1:roi_x2])
-    print("color1:{}, color2:{}".format(color1, color2))
-    cv.imwrite("/media/sf_shares/output/colors/" + color2 + "_" + str(time.time()) + ".jpg", orgFrame[ top:bottom, left:right])
+    #color1, color2, colorDetect = getROI_Color(orgFrame[ roi_y1:roi_y2, roi_x1:roi_x2])
+    
+    if(top*bottom>0 and left*right>0):
+        #color1, color2, colorDetect = getROI_mainColor(orgFrame[ top:bottom, left:right])
+        color1, color2, colorDetect = getROI_mainColor(orgFrame[ roi_y1:roi_y2, roi_x1:roi_x2 ])
 
-    # Draw a bounding box.
-    cv.rectangle(frame, (left, top), (right, bottom), colorDetect, 3)
+        print("color1:{}, color2:{}, colorDetect:{}".format(color1, color2, colorDetect))
+        cv.imwrite("/media/sf_shares/output/colors/" + color2 + "_" + str(time.time()) + ".jpg", orgFrame[ top:bottom, left:right])
 
-    #cv.putText(frame, color2, (center_x, center_y), cv.FONT_HERSHEY_COMPLEX, 1.8, colorDetect, 2)
+        # Draw a bounding box.
+        cv.rectangle(frame, (left, top), (right, bottom), colorDetect, 3)
 
-    try:
-        frame[ start_y:end_y, start_x:end_x] = boundbox
-        print("read:","images/"+classes[classId]+".jpg")
+        #cv.putText(frame, color2, (center_x, center_y), cv.FONT_HERSHEY_COMPLEX, 1.8, colorDetect, 2)
 
-    except:
-        print("add text: ",labelName)
-        cv.putText(frame, labelName, (center_x, center_y), cv.FONT_HERSHEY_COMPLEX, 1.6, labelColor, 2)
+        try:
+            frame[ start_y:end_y, start_x:end_x] = boundbox
+            print("read:","images/"+classes[classId]+".jpg")
+
+        except:
+            print("add text: ",labelName)
+            cv.putText(frame, labelName, (center_x, center_y), cv.FONT_HERSHEY_COMPLEX, 1.6, labelColor, 2)
 
 
     #label = '%.2f' % conf
