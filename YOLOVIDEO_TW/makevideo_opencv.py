@@ -1,7 +1,8 @@
-import os
+import os, time
 import argparse
 import cv2 as cv
 import numpy as np
+import webcolors
 
 # Initialize the parameters
 confThreshold = 0.5  #Confidence threshold
@@ -9,7 +10,7 @@ nmsThreshold = 0.4   #Non-maximum suppression threshold
 inpWidth = 608       #Width of network's input image
 inpHeight = 608      #Height of network's input image
 
-FILE_OUTPUT = '/media/sf_shares/pepper_1.avi'
+FILE_OUTPUT = '/media/sf_shares/output/pepper_1.avi'
 # Load names of classes
 classesFile = "cfg.pepper/obj.names";
 classes = None
@@ -24,10 +25,39 @@ net = cv.dnn.readNetFromDarknet(modelConfiguration, modelWeights)
 net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
 net.setPreferableTarget(cv.dnn.DNN_TARGET_CPU)
 
-outputFile = "yolo_out_py.avi"
+outputFile = FILE_OUTPUT
 parser = argparse.ArgumentParser(description="Do you wish to scan for live hosts or conduct a port scan?")
 parser.add_argument("-i", dest='image', action='store', help='Image')
 parser.add_argument("-v", dest='video', action='store',help='Video file')
+
+def closest_colour(requested_colour):
+    min_colours = {}
+    for key, name in webcolors.css3_hex_to_names.items():
+        r_c, g_c, b_c = webcolors.hex_to_rgb(key)
+        rd = (r_c - requested_colour[0]) ** 2
+        gd = (g_c - requested_colour[1]) ** 2
+        bd = (b_c - requested_colour[2]) ** 2
+        min_colours[(rd + gd + bd)] = name
+    return min_colours[min(min_colours.keys())]
+
+def get_colour_name(requested_colour):
+    try:
+        closest_name = actual_name = webcolors.rgb_to_name(requested_colour)
+    except ValueError:
+        closest_name = closest_colour(requested_colour)
+        actual_name = None
+    return actual_name, closest_name
+
+def getROI_Color(roi):
+    mean_blue = np.mean(roi[:,:,0])
+    mean_green = np.mean(roi[:,:,1])
+    mean_red = np.mean(roi[:,:,2])
+
+    actual_name, closest_name = get_colour_name((mean_red, mean_green, mean_blue))
+
+    #actual_name, closest_name = get_colour_name((mean_blue, mean_green, mean_red))
+
+    return (actual_name, closest_name, (mean_blue, mean_green, mean_red))
 
 # Get the names of the output layers
 def getOutputsNames(net):
@@ -37,7 +67,7 @@ def getOutputsNames(net):
     return [layersNames[i[0] - 1] for i in net.getUnconnectedOutLayers()]
 
 # Remove the bounding boxes with low confidence using non-maxima suppression
-def postprocess(frame, outs):
+def postprocess(frame, outs, orgFrame):
     frameHeight = frame.shape[0]
     frameWidth = frame.shape[1]
  
@@ -75,10 +105,10 @@ def postprocess(frame, outs):
         top = box[1]
         width = box[2]
         height = box[3]
-        drawPred(classIds[i], confidences[i], left, top, left + width, top + height)
+        drawPred(classIds[i], confidences[i], left, top, left + width, top + height, orgFrame)
 
 # Draw the predicted bounding box
-def drawPred(classId, conf, left, top, right, bottom):
+def drawPred(classId, conf, left, top, right, bottom, orgFrame):
     if(classes[classId]=="0_pepper_flower"):
         labelName = "flower"
         labelColor = (255, 255, 255)
@@ -92,17 +122,44 @@ def drawPred(classId, conf, left, top, right, bottom):
         labelName = "unknow"
         labelColor = (255, 255, 255)
 
-
-    # Draw a bounding box.
-    cv.rectangle(frame, (left, top), (right, bottom), labelColor, 3)
-
     boundbox = cv.imread("cfg.pepper/images/"+classes[classId]+".jpg")
     print("boundbox:", boundbox.shape)
     start_x=left
     start_y=top
     end_x=start_x+boundbox.shape[1]
     end_y=start_y+boundbox.shape[0]
+    center_x = left + int((right-left)/2)
+    center_y = top + int((bottom-top)/2)
     print("(end_x-start_x)={}, (end_y-start_y)={}, img.shape[1]={}, img.shape[0]={}".format((end_x-start_x),(end_y-start_y),boundbox.shape[1],boundbox.shape[0]))
+    #(color1, color2, colorDetect) = getROI_Color(frame[ start_y:end_y, start_x:end_x])
+    if(center_x-10<0):
+        roi_x1 = 0
+    else:
+        roi_x1= center_x - 10
+
+    if(center_y-10<0): 
+        roi_y1 = 0
+    else:
+        roi_y1= center_y - 10
+
+    if(center_x+10>frame.shape[1]): 
+        roi_x2 = frame.shape[1]
+    else:
+        roi_x2= center_x + 10
+
+    if(center_y+10>frame.shape[0]): 
+        roi_y2 = frame.shape[0]
+    else:
+        roi_y2= center_y + 10
+
+    (color1, color2, colorDetect) = getROI_Color(orgFrame[ roi_y1:roi_y2, roi_x1:roi_x2])
+    print("color1:{}, color2:{}".format(color1, color2))
+    cv.imwrite("/media/sf_shares/output/colors/" + color2 + "_" + str(time.time()) + ".jpg", orgFrame[ top:bottom, left:right])
+
+    # Draw a bounding box.
+    cv.rectangle(frame, (left, top), (right, bottom), colorDetect, 3)
+
+    #cv.putText(frame, color2, (center_x, center_y), cv.FONT_HERSHEY_COMPLEX, 1.8, colorDetect, 2)
 
     try:
         frame[ start_y:end_y, start_x:end_x] = boundbox
@@ -110,14 +167,14 @@ def drawPred(classId, conf, left, top, right, bottom):
 
     except:
         print("add text: ",labelName)
-        cv.putText(frame, labelName, (int(x), int(y)), cv.FONT_HERSHEY_COMPLEX, 1.6, labelColor, 2)
+        cv.putText(frame, labelName, (center_x, center_y), cv.FONT_HERSHEY_COMPLEX, 1.6, labelColor, 2)
 
 
-    label = '%.2f' % conf
+    #label = '%.2f' % conf
     # Get the label for the class name and its confidence
-    if classes:
-        assert(classId < len(classes))
-        label = '%s:%s' % (classes[classId], label)
+    #if classes:
+    #    assert(classId < len(classes))
+    #    label = '%s:%s' % (classes[classId], label)
  
     #Display the label at the top of the bounding box
     #labelSize, baseLine = cv.getTextSize(label, cv.FONT_HERSHEY_SIMPLEX, 5, 2)
@@ -163,7 +220,8 @@ while cv.waitKey(1) < 0:
         print("Output file is stored as ", outputFile)
         cv.waitKey(3000)
         break
- 
+
+    orgFrame = frame.copy()
     # Create a 4D blob from a frame.
     blob = cv.dnn.blobFromImage(frame, 1/255, (inpWidth, inpHeight), [0,0,0], 1, crop=False)
  
@@ -174,7 +232,7 @@ while cv.waitKey(1) < 0:
     outs = net.forward(getOutputsNames(net))
  
     # Remove the bounding boxes with low confidence
-    postprocess(frame, outs)
+    postprocess(frame, outs, orgFrame)
  
     # Put efficiency information. The function getPerfProfile returns the 
     # overall time for inference(t) and the timings for each of the layers(in layersTimes)
