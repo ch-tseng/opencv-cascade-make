@@ -3,8 +3,8 @@ import glob, os
 import os.path
 
 testRatio = 0.2
-cfgFolder = "cfg"
-imageFolder = "dataset/palm_num/yolo"
+cfgFolder = "cfg.cucumber"
+imageFolder = "/home/digits/works/opencv-cascade-make/dataset/cucumber_A/yolo"
 outputTrainFile = cfgFolder + "/train.txt"
 outputTestFile = cfgFolder + "/test.txt"
 folderCharacter = "/"  # \\ is for windows

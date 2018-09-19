@@ -7,10 +7,10 @@ from os.path import basename
 from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
 
 folderCharacter = "/"  # \\ is for windows
-xmlFolder = "/export/home/digits/jupyter/chtseng/opencv-cascade-make/dataset/insects/labels"
-imgFolder = "/export/home/digits/jupyter/chtseng/opencv-cascade-make/dataset/insects/images"
-saveYoloPath = "/export/home/digits/jupyter/chtseng/opencv-cascade-make/dataset/insects/yolo"
-classList = { "0_ladybug": 0, "1_Camellia":1, "2_Pieridae":2, "3_Lindinger":3, "4_Papilio_1_4": 4, "5_Papilio_5": 5, "6_ant": 6 }
+xmlFolder = "/home/digits/works/opencv-cascade-make/dataset/cucumber_A/labels"
+imgFolder = "/home/digits/works/opencv-cascade-make/dataset/cucumber_A/images"
+saveYoloPath = "/home/digits/works/opencv-cascade-make/dataset/cucumber_A/yolo"
+classList = { "0_cucumber_flower": 0, "2_cucumber_matured":1 }
 
 if not os.path.exists(saveYoloPath):
     os.makedirs(saveYoloPath)
