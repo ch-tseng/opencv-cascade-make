@@ -24,10 +24,10 @@ def putText(image, text, x, y, color=(255,255,255), thickness=1, size=1.2):
         cv2.putText( image, text, (int(x), int(y)), cv2.FONT_HERSHEY_SIMPLEX, size, color, thickness)
     return image
 
+i = 0
 while True:
     (grabbed, img) = camera.read()   
 
-    i = 0
     print("Frame #", i)
     cv2.imwrite(output_folder + "/" + str(i) + ".jpg", img)
 
