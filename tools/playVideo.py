@@ -30,3 +30,5 @@ while True:
     i = 0
     print("Frame #", i)
     cv2.imwrite(output_folder + "/" + str(i) + ".jpg", img)
+
+    i += 1
