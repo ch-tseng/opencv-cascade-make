@@ -11,16 +11,19 @@ nmsThreshold = 0.4   #Non-maximum suppression threshold
 inpWidth = 608       #Width of network's input image
 inpHeight = 608      #Height of network's input image
 
-FILE_OUTPUT = '/media/sf_shares/output/pepper_1.avi'
+kmean_colors = 5    #detect colors
+pad = 30
+
+FILE_OUTPUT = '/media/sf_shares/output/cucumber_movie1.avi'
 # Load names of classes
-classesFile = "cfg.pepper/obj.names";
+classesFile = "cfg.cucumber/obj.names";
 classes = None
 with open(classesFile, 'rt') as f:
     classes = f.read().rstrip('\n').split('\n')
  
 # Give the configuration and weight files for the model and load the network using them.
-modelConfiguration = "cfg.pepper/yolov3.cfg";
-modelWeights = "cfg.pepper/weights/yolov3_40000.weights";
+modelConfiguration = "cfg.cucumber/yolov3.cfg";
+modelWeights = "cfg.cucumber/weights/yolov3_20000.weights";
  
 net = cv.dnn.readNetFromDarknet(modelConfiguration, modelWeights)
 net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
@@ -62,7 +65,7 @@ def getROI_Color(roi):
 #-----------------------------------------------------------------
 
 def getROI_mainColor(roi):
-    dc = DominantColors(roi, 2) 
+    dc = DominantColors(roi, kmean_colors) 
     colors = dc.dominantColors()
 
     r = int(colors[0][2])
@@ -123,20 +126,18 @@ def postprocess(frame, outs, orgFrame):
 
 # Draw the predicted bounding box
 def drawPred(classId, conf, left, top, right, bottom, orgFrame):
-    if(classes[classId]=="0_pepper_flower"):
+    if(classes[classId]=="0_cucumber_flower"):
         labelName = "flower"
         labelColor = (255, 255, 255)
-    elif(classes[classId]=="1_pepper_young"):
-        labelName = "young"
+    elif(classes[classId]=="2_cucumber_matured"):
+        labelName = "cucumber"
         labelColor = (193, 161, 31)
-    elif(classes[classId]=="2_pepper_matured"):
-        labelName = "Pepper"
-        labelColor = (12, 255, 240)
     else:
         labelName = "unknow"
         labelColor = (255, 255, 255)
 
-    boundbox = cv.imread("cfg.pepper/images/"+classes[classId]+".jpg")
+    print("Label:{}, Score:{}".format(classes[classId], conf[classId]) )
+    boundbox = cv.imread("cfg.cucumber/images/"+classes[classId]+".jpg")
     print("boundbox:", boundbox.shape)
     start_x=left
     start_y=top
@@ -148,7 +149,6 @@ def drawPred(classId, conf, left, top, right, bottom, orgFrame):
     #print("(end_x-start_x)={}, (end_y-start_y)={}, img.shape[1]={}, img.shape[0]={}".format((end_x-start_x),(end_y-start_y),boundbox.shape[1],boundbox.shape[0]))
     #(color1, color2, colorDetect) = getROI_Color(frame[ start_y:end_y, start_x:end_x])
     
-    pad = 15
     if(center_x-pad<0):
         roi_x1 = 0
     else:
