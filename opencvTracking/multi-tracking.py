@@ -145,8 +145,10 @@ if __name__ == "__main__":
                 fontcolor = (0, 255, 0)
                 fontbold = 1
 
-                if("Stop" not in direction and trackingIndex!=True):
+                print("justDetected:", justDetected)
+                if("Stop" not in direction):
                     cv2.putText(frame, direction, (int(newbox[0]), int(newbox[1]+20)), cv2.FONT_HERSHEY_COMPLEX, 0.5, (255,0,0), 1)
+
                     if(abs(x_var)<threshold_slow or abs(y_var)<threshold_slow):
                         speed ="slow"
                         fontcolor = (0,255,0)
@@ -161,15 +163,15 @@ if __name__ == "__main__":
                         fontbold = 2
                         print("FAST:", x_var, y_var)
 
-                    cv2.putText(frame, speed, (int(newbox[0]), int(newbox[1])), cv2.FONT_HERSHEY_COMPLEX, 0.5, fontcolor, fontbold)
-
+                    if(justDetected==False):
+                        cv2.putText(frame, speed, (int(newbox[0]), int(newbox[1])), cv2.FONT_HERSHEY_COMPLEX, 0.5, fontcolor, fontbold)
 
                 lastX[id] = int(newbox[0]+(newbox[2]/2))
                 lastY[id] = int(newbox[1]+(newbox[3]/2))
-                justDetected = False
 
+        justDetected = False
         #frame = imutils.resize(frame, width=640)
-        print("Frame #{}, trackingIndex:{}, bbox:{}, obj count:{}".format(i, trackingIndex, len(bboxes), len(boxes)) )
+        print("Frame #{}, justDetected:{}, trackingIndex:{}, bbox:{}, obj count:{}".format(i, justDetected, trackingIndex, len(bboxes), len(boxes)) )
         cv2.imshow("preview", frame)
 
         # Saves for video
