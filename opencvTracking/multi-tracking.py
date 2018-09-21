@@ -4,7 +4,7 @@ from pydarknet import Detector, Image
 import cv2
 from random import randint
 
-FILE_OUTPUT = 'cucumber.avi'
+FILE_OUTPUT = 'traffic_1.avi'
 frames_tracking = 60
 trackerType = "CSRT"
 
@@ -44,7 +44,7 @@ if __name__ == "__main__":
                    bytes("../../darknet/yolov3.weights", encoding="utf-8"), 0,
                    bytes("coco.data", encoding="utf-8"))
 
-    cap = cv2.VideoCapture("cars.mp4")
+    cap = cv2.VideoCapture("t1.mp4")
 
     # Get current width of frame
     width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)   # float
@@ -100,9 +100,9 @@ if __name__ == "__main__":
                         lastY.append(y)
                         lastX.append(x)
 
-                        cv2.rectangle(frame, (int(x-w/2),int(y-h/2)),(int(x+w/2),int(y+h/2)),(0,255,0), 3)
+                        #cv2.rectangle(frame, (int(x-w/2),int(y-h/2)),(int(x+w/2),int(y+h/2)),(0,255,0), 3)
                         print("add text: ",label)
-                        cv2.putText(frame, label, (int(x), int(y)), cv2.FONT_HERSHEY_COMPLEX, 1.3, (0,255,0))
+                        #cv2.putText(frame, label, (int(x), int(y)), cv2.FONT_HERSHEY_COMPLEX, 1.3, (0,255,0))
                         indexObj += 1
 
                 for bbox in bboxes:
@@ -119,22 +119,36 @@ if __name__ == "__main__":
                 counted[id] = 1
 
                 direction = ""
-                if( int(newbox[0]+(newbox[2]/2)) - lastX[id] > 2 ):
+                x_var = int(newbox[0]+(newbox[2]/2)) - lastX[id]
+                y_var = int(newbox[1]+(newbox[3]/2)) - lastY[id]
+
+                if( x_var > 2 ):
                     direction = direction + "Right"
-                elif( int(newbox[0]+(newbox[2]/2)) - lastX[id] < -2):
+                elif( x_var < -2):
                     direction = direction + "Left"
                 else:
                     direction = direction + "Stoped"
 
-                if( int(newbox[1]+(newbox[3]/2)) - lastY[id] > 2 ):
+                if( y_var > 2 ):
                     direction = direction + "/Down"
-                elif( int(newbox[1]+(newbox[3]/2)) - lastY[id] < -2):
+                elif( y_var < -2):
                     direction = direction + "/Up"
                 else:
                     direction = direction + "Stoped"
 
+                threshold_slow = 10
+                threshold_normal = 30
+
                 if("Stop" not in direction):
-                    cv2.putText(frame, direction, (int(newbox[0]), int(newbox[1]+20)), cv2.FONT_HERSHEY_COMPLEX, 0.5, (0,255,0), 2)
+                    cv2.putText(frame, direction, (int(newbox[0]), int(newbox[1]+20)), cv2.FONT_HERSHEY_COMPLEX, 0.5, (255,0,0), 1)
+                    if(abs(x_var)<threshold_slow and abs(y_var)<threshold_slow):
+                        cv2.putText(frame, "slow", (int(newbox[0]), int(newbox[1])), cv2.FONT_HERSHEY_COMPLEX, 0.5, (0,255,0), 1)
+                    if((abs(x_var)>=threshold_slow and abs(x_var)<threshold_normal) and (abs(y_var)>=threshold_slow and abs(y_var)<threshold_normal)):
+                       cv2.putText(frame, "normal", (int(newbox[0]), int(newbox[1])), cv2.FONT_HERSHEY_COMPLEX, 0.5, (0,255,0), 1)
+                    if(abs(x_var)>=threshold_normal or abs(y_var)>=threshold_normal):
+                        cv2.putText(frame, "fast", (int(newbox[0]), int(newbox[1])), cv2.FONT_HERSHEY_COMPLEX, 0.5, (0,0,255), 2)
+
+
                     lastX[id] = int(newbox[0]+(newbox[2]/2))
                     lastY[id] = int(newbox[1]+(newbox[3]/2))
 
