@@ -137,16 +137,28 @@ if __name__ == "__main__":
                     direction = direction + "Stoped"
 
                 threshold_slow = 10
-                threshold_normal = 30
+                threshold_normal = 40
+                speed = ""
+                fontcolor = (0, 255, 0)
+                fontbold = 1
 
                 if("Stop" not in direction):
                     cv2.putText(frame, direction, (int(newbox[0]), int(newbox[1]+20)), cv2.FONT_HERSHEY_COMPLEX, 0.5, (255,0,0), 1)
-                    if(abs(x_var)<threshold_slow and abs(y_var)<threshold_slow):
-                        cv2.putText(frame, "slow", (int(newbox[0]), int(newbox[1])), cv2.FONT_HERSHEY_COMPLEX, 0.5, (0,255,0), 1)
-                    if((abs(x_var)>=threshold_slow and abs(x_var)<threshold_normal) and (abs(y_var)>=threshold_slow and abs(y_var)<threshold_normal)):
-                       cv2.putText(frame, "normal", (int(newbox[0]), int(newbox[1])), cv2.FONT_HERSHEY_COMPLEX, 0.5, (0,255,0), 1)
+                    if(abs(x_var)<threshold_slow or abs(y_var)<threshold_slow):
+                        speed ="slow"
+                        fontcolor = (0,255,0)
+                        fontbold = 1
+                    if((abs(x_var)>=threshold_slow and abs(x_var)<threshold_normal) or (abs(y_var)>=threshold_slow and abs(y_var)<threshold_normal)):
+                        speed = "normal"
+                        fontcolor = (0,255,0)
+                        fontbold = 1
                     if(abs(x_var)>=threshold_normal or abs(y_var)>=threshold_normal):
-                        cv2.putText(frame, "fast", (int(newbox[0]), int(newbox[1])), cv2.FONT_HERSHEY_COMPLEX, 0.5, (0,0,255), 2)
+                        speed = "fast"
+                        fontcolor = (0,0,255)
+                        fontbold = 2
+                        print("FAST:", x_var, y_var)
+
+                    cv2.putText(frame, speed, (int(newbox[0]), int(newbox[1])), cv2.FONT_HERSHEY_COMPLEX, 0.5, fontcolor, fontbold)
 
 
                     lastX[id] = int(newbox[0]+(newbox[2]/2))
