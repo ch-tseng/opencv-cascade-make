@@ -10,6 +10,7 @@ trackerType = "CSRT"
 
 multiTracker = cv2.MultiTracker_create()
 trackerTypes = ['BOOSTING', 'MIL', 'KCF','TLD', 'MEDIANFLOW', 'GOTURN', 'MOSSE', 'CSRT']
+justDetected = True
 
 def createTrackerByName(trackerType):
     # Create a tracker based on tracker name
@@ -108,6 +109,8 @@ if __name__ == "__main__":
                 for bbox in bboxes:
                     multiTracker.add(createTrackerByName(trackerType), frame, bbox)
 
+                justDetected = True
+
         success, boxes = multiTracker.update(frame)
         for id, newbox in enumerate(boxes):
             p1 = (int(newbox[0]), int(newbox[1]))
@@ -142,7 +145,7 @@ if __name__ == "__main__":
                 fontcolor = (0, 255, 0)
                 fontbold = 1
 
-                if("Stop" not in direction):
+                if("Stop" not in direction and trackingIndex!=True):
                     cv2.putText(frame, direction, (int(newbox[0]), int(newbox[1]+20)), cv2.FONT_HERSHEY_COMPLEX, 0.5, (255,0,0), 1)
                     if(abs(x_var)<threshold_slow or abs(y_var)<threshold_slow):
                         speed ="slow"
@@ -161,8 +164,9 @@ if __name__ == "__main__":
                     cv2.putText(frame, speed, (int(newbox[0]), int(newbox[1])), cv2.FONT_HERSHEY_COMPLEX, 0.5, fontcolor, fontbold)
 
 
-                    lastX[id] = int(newbox[0]+(newbox[2]/2))
-                    lastY[id] = int(newbox[1]+(newbox[3]/2))
+                lastX[id] = int(newbox[0]+(newbox[2]/2))
+                lastY[id] = int(newbox[1]+(newbox[3]/2))
+                justDetected = False
 
         #frame = imutils.resize(frame, width=640)
         print("Frame #{}, trackingIndex:{}, bbox:{}, obj count:{}".format(i, trackingIndex, len(bboxes), len(boxes)) )
