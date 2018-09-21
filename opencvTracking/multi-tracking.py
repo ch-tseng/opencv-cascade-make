@@ -5,27 +5,28 @@ import cv2
 from random import randint
 
 FILE_OUTPUT = 'videos/t4.avi'
-frames_tracking = 60
+frames_tracking = 90
 trackerType = "CSRT"
-detectDirectionPeriod = 8
+detectDirectionPeriod = 5
 
 multiTracker = cv2.MultiTracker_create()
 trackerTypes = ['BOOSTING', 'MIL', 'KCF','TLD', 'MEDIANFLOW', 'GOTURN', 'MOSSE', 'CSRT']
 justDetected = True
+justDetected_wait = 6
 
 def getDirection(x_var, y_var):
     direction = ""
 
-    if( x_var > 2 ):
+    if( x_var > 5 ):
         direction = direction + "right"
-    elif( x_var < -2):
+    elif( x_var < -5):
         direction = direction + "left"
     else:
         direction = direction + "stop"
 
-    if( y_var > 2 ):
+    if( y_var > 5 ):
         direction = direction + "_down"
-    elif( y_var < -2):
+    elif( y_var < -5):
         direction = direction + "_up"
     else:
         direction = direction + "_stop"
@@ -138,6 +139,7 @@ if __name__ == "__main__":
     speed= ""
     fontcolor = (0, 0, 0)
     fontbold = 1
+    waitJustDetected = justDetected_wait + 1
 
     while True:
         r, frame = cap.read()
@@ -187,6 +189,7 @@ if __name__ == "__main__":
                     multiTracker.add(createTrackerByName(trackerType), frame, bbox)
 
                 justDetected = True
+                waitJustDetected = 0
 
         success, boxes = multiTracker.update(frame)
         for id, newbox in enumerate(boxes):
@@ -209,12 +212,14 @@ if __name__ == "__main__":
                 lastX[id] = int(newbox[0]+(newbox[2]/2))
                 lastY[id] = int(newbox[1]+(newbox[3]/2))
 
-            if(justDetected==False):
-                cv2.putText(frame, speed, (int(newbox[0]), int(newbox[1])), cv2.FONT_HERSHEY_COMPLEX, 0.9, fontcolor, fontbold)
+                if(justDetected==False):
+                    if(waitJustDetected>justDetected_wait):
+                        cv2.putText(frame, speed, (int(newbox[0]), int(newbox[1])), cv2.FONT_HERSHEY_COMPLEX, 0.9, fontcolor, fontbold)
 
-            if(dirCar[id] != "stop_stop"):
-                frame = imgDirection(frame, dirCar[id], p1)
-
+                        if(dirCar[id] != "stop_stop"):
+                            frame = imgDirection(frame, dirCar[id], p1)
+                    else:
+                        waitJustDetected += 1
 
         justDetected = False
         #frame = imutils.resize(frame, width=640)
