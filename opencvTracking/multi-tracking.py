@@ -216,8 +216,8 @@ if __name__ == "__main__":
                     if(waitJustDetected>justDetected_wait):
                         cv2.putText(frame, speed, (int(newbox[0]), int(newbox[1])), cv2.FONT_HERSHEY_COMPLEX, 0.9, fontcolor, fontbold)
 
-                        if(dirCar[id] != "stop_stop"):
-                            frame = imgDirection(frame, dirCar[id], p1)
+                        frame = imgDirection(frame, dirCar[id], p1)
+
                     else:
                         waitJustDetected += 1
 
