@@ -4,13 +4,57 @@ from pydarknet import Detector, Image
 import cv2
 from random import randint
 
-FILE_OUTPUT = 'traffic_1.avi'
+FILE_OUTPUT = 'videos/t4.avi'
 frames_tracking = 60
 trackerType = "CSRT"
+detectDirectionPeriod = 8
 
 multiTracker = cv2.MultiTracker_create()
 trackerTypes = ['BOOSTING', 'MIL', 'KCF','TLD', 'MEDIANFLOW', 'GOTURN', 'MOSSE', 'CSRT']
 justDetected = True
+
+def getDirection(x_var, y_var):
+    direction = ""
+
+    if( x_var > 2 ):
+        direction = direction + "right"
+    elif( x_var < -2):
+        direction = direction + "left"
+    else:
+        direction = direction + "stop"
+
+    if( y_var > 2 ):
+        direction = direction + "_down"
+    elif( y_var < -2):
+        direction = direction + "_up"
+    else:
+        direction = direction + "_stop"
+
+    return direction
+
+def getSpeed(x_var, y_var):
+    threshold_slow = 10
+    threshold_normal = 40
+    speed = ""
+    fontcolor = (0, 255, 0)
+    fontbold = 1
+
+    if("Stop" not in direction):
+         if(abs(x_var)<threshold_slow or abs(y_var)<threshold_slow):
+             speed ="slow"
+             fontcolor = (0,255,0)
+             fontbold = 1
+         if((abs(x_var)>=threshold_slow and abs(x_var)<threshold_normal) or (abs(y_var)>=threshold_slow and abs(y_var)<threshold_normal)):
+             speed = "normal"
+             fontcolor = (0,255,0)
+             fontbold = 1
+         if(abs(x_var)>=threshold_normal or abs(y_var)>=threshold_normal):
+             speed = "fast"
+             fontcolor = (0,0,255)
+             fontbold = 2
+             print("FAST:", x_var, y_var)
+
+    return (speed, fontcolor, fontbold) 
 
 def createTrackerByName(trackerType):
     # Create a tracker based on tracker name
@@ -39,13 +83,41 @@ def createTrackerByName(trackerType):
      
     return tracker
 
+def transparentOverlay(src , overlay , pos=(0,0),scale = 1):
+    """
+    :param src: Input Color Background Image
+    :param overlay: transparent Image (BGRA)
+    :param pos:  position where the image to be blit.
+    :param scale : scale factor of transparent image.
+    :return: Resultant Image
+    """
+    overlay = cv2.resize(overlay,(0,0),fx=scale,fy=scale)
+    h,w,_ = overlay.shape  # Size of foreground
+    rows,cols,_ = src.shape  # Size of background Image
+    y,x = pos[0],pos[1]    # Position of foreground/overlay image
+    
+    #loop over all pixels and apply the blending equation
+    for i in range(h):
+        for j in range(w):
+            if x+i >= rows or y+j >= cols:
+                continue
+            alpha = float(overlay[i][j][3]/255.0) # read the alpha channel 
+            src[x+i][y+j] = alpha*overlay[i][j][:3]+(1-alpha)*src[x+i][y+j]
+    return src
+
+def imgDirection(img, direction, posXY):
+    dirImg = cv2.imread("images/"+direction+".png", cv2.IMREAD_UNCHANGED)
+    #print("images/"+direction+".png")
+    result = transparentOverlay(img, dirImg, posXY, 0.7)
+    return result
+
 if __name__ == "__main__":
 
     net = Detector(bytes("../../darknet/cfg/yolov3.cfg", encoding="utf-8"), 
-                   bytes("../../darknet/yolov3.weights", encoding="utf-8"), 0,
+                   bytes("yolov3.weights", encoding="utf-8"), 0,
                    bytes("coco.data", encoding="utf-8"))
 
-    cap = cv2.VideoCapture("t1.mp4")
+    cap = cv2.VideoCapture("videos/t4.mp4")
 
     # Get current width of frame
     width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)   # float
@@ -62,6 +134,10 @@ if __name__ == "__main__":
     objid = []
     lastY = []
     lastX = []
+    dirCar = []
+    speed= ""
+    fontcolor = (0, 0, 0)
+    fontbold = 1
 
     while True:
         r, frame = cap.read()
@@ -84,12 +160,12 @@ if __name__ == "__main__":
                 del dark_frame
 
                 end_time = time.time()
-                print("{}: Elapsed Time:{}".format(i, end_time-start_time) )
+                #print("{}: Elapsed Time:{}".format(i, end_time-start_time) )
 
                 indexObj = 0
                 for cat, score, bounds in results:
                     label = cat.decode('utf-8')
-                    print("{}:{}".format(cat, score))
+                    #print("{}:{}".format(cat, score))
 
                     x, y, w, h = bounds
                     if(label=="car"):
@@ -98,11 +174,12 @@ if __name__ == "__main__":
                         colors.append((randint(0, 255), randint(0, 255), randint(0, 255)))
                         objid.append(id)
                         counted.append(0)
-                        lastY.append(y)
-                        lastX.append(x)
+                        lastY.append(int(y + h/2))
+                        lastX.append(int(x + w/2))
+                        dirCar.append("stop_stop")
 
                         #cv2.rectangle(frame, (int(x-w/2),int(y-h/2)),(int(x+w/2),int(y+h/2)),(0,255,0), 3)
-                        print("add text: ",label)
+                        #print("add text: ",label)
                         #cv2.putText(frame, label, (int(x), int(y)), cv2.FONT_HERSHEY_COMPLEX, 1.3, (0,255,0))
                         indexObj += 1
 
@@ -118,56 +195,26 @@ if __name__ == "__main__":
             #cv2.rectangle(frame, p1, p2, colors[id], 2, 1)
             #cv2.putText(frame, objid[id], (int(newbox[0]), int(newbox[1])), cv2.FONT_HERSHEY_COMPLEX, 1.0, colors[id])
 
-            if( newbox[1] > 10): # Y
-                counted[id] = 1
+            counted[id] = 1  #count numbers of the object
 
+            if(i % detectDirectionPeriod == 0):
                 direction = ""
                 x_var = int(newbox[0]+(newbox[2]/2)) - lastX[id]
                 y_var = int(newbox[1]+(newbox[3]/2)) - lastY[id]
 
-                if( x_var > 2 ):
-                    direction = direction + "Right"
-                elif( x_var < -2):
-                    direction = direction + "Left"
-                else:
-                    direction = direction + "Stoped"
+                dirCar[id] = getDirection(x_var, y_var)
 
-                if( y_var > 2 ):
-                    direction = direction + "/Down"
-                elif( y_var < -2):
-                    direction = direction + "/Up"
-                else:
-                    direction = direction + "Stoped"
-
-                threshold_slow = 10
-                threshold_normal = 40
-                speed = ""
-                fontcolor = (0, 255, 0)
-                fontbold = 1
-
-                print("justDetected:", justDetected)
-                if("Stop" not in direction):
-                    cv2.putText(frame, direction, (int(newbox[0]), int(newbox[1]+20)), cv2.FONT_HERSHEY_COMPLEX, 0.5, (255,0,0), 1)
-
-                    if(abs(x_var)<threshold_slow or abs(y_var)<threshold_slow):
-                        speed ="slow"
-                        fontcolor = (0,255,0)
-                        fontbold = 1
-                    if((abs(x_var)>=threshold_slow and abs(x_var)<threshold_normal) or (abs(y_var)>=threshold_slow and abs(y_var)<threshold_normal)):
-                        speed = "normal"
-                        fontcolor = (0,255,0)
-                        fontbold = 1
-                    if(abs(x_var)>=threshold_normal or abs(y_var)>=threshold_normal):
-                        speed = "fast"
-                        fontcolor = (0,0,255)
-                        fontbold = 2
-                        print("FAST:", x_var, y_var)
-
-                    if(justDetected==False):
-                        cv2.putText(frame, speed, (int(newbox[0]), int(newbox[1])), cv2.FONT_HERSHEY_COMPLEX, 0.5, fontcolor, fontbold)
+                (speed, fontcolor, fontbold) = getSpeed(x_var, y_var)
 
                 lastX[id] = int(newbox[0]+(newbox[2]/2))
                 lastY[id] = int(newbox[1]+(newbox[3]/2))
+
+            if(justDetected==False):
+                cv2.putText(frame, speed, (int(newbox[0]), int(newbox[1])), cv2.FONT_HERSHEY_COMPLEX, 0.9, fontcolor, fontbold)
+
+            if(dirCar[id] != "stop_stop"):
+                frame = imgDirection(frame, dirCar[id], p1)
+
 
         justDetected = False
         #frame = imutils.resize(frame, width=640)
