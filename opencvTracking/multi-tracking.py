@@ -5,7 +5,7 @@ import cv2
 from random import randint
 
 FILE_OUTPUT = 'videos/t4.avi'
-frames_tracking = 120
+frames_tracking = 60
 trackerType = "CSRT"
 detectDirectionPeriod = 5
 
@@ -144,6 +144,7 @@ if __name__ == "__main__":
     lastX = []
     dirCar = []
     lastDir = []
+    objName = []
     speed= ""
     fontcolor = (0, 0, 0)
     fontbold = 1
@@ -179,8 +180,9 @@ if __name__ == "__main__":
                     #print("{}:{}".format(cat, score))
 
                     x, y, w, h = bounds
-                    if(label in ("car", "bus", "motorbike") ):
+                    if(label in ("car", "bus", "motorbike", "truck") ):
                         id = str(time.time()) + "_" + str(indexObj)
+                        objName.append(label)
                         bboxes.append((x-(w/2), y-(h/2), w, h))
                         colors.append((randint(0, 255), randint(0, 255), randint(0, 255)))
                         objid.append(id)
@@ -236,6 +238,8 @@ if __name__ == "__main__":
                 #print(waitJustDetected, justDetected_wait)
                 #if(waitJustDetected>justDetected_wait):
                 if(dirCar[id] != "stop_stop"):
+                    print("images/"+objName[id]+".png")
+                    frame = transparentOverlay(frame, "images/"+objName[id]+".png", (int(newbox[0]-20), int(newbox[1])), 0.7)
                     cv2.putText(frame, speed, (int(newbox[0]), int(newbox[1])), cv2.FONT_HERSHEY_COMPLEX, 0.9, fontcolor, fontbold)
                     if(dirCar[id]!=""):
                         frame = imgDirection(frame, dirCar[id], p1)
