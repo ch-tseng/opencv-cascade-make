@@ -14,22 +14,29 @@ trackerTypes = ['BOOSTING', 'MIL', 'KCF','TLD', 'MEDIANFLOW', 'GOTURN', 'MOSSE',
 justDetected = True
 justDetected_wait = 4
 
-def getDirection(x_var, y_var):
+def getDirection(x_var, y_var, lastDir):
     direction = ""
 
-    if( x_var > 2 ):
-        direction = direction + "right"
-    elif( x_var < -2):
-        direction = direction + "left"
-    else:
-        direction = direction + "stop"
+    if(abs(x_var)<=1 and abs(y_var)<=1):
+        direction = "stop_stop"
 
-    if( y_var > 2 ):
-        direction = direction + "_down"
-    elif( y_var < -2):
-        direction = direction + "_up"
+    elif(abs(x_var)<=3 and abs(y_var)<=3):
+        direction = lastDir
+
     else:
-        direction = direction + "_stop"
+        if( x_var >= 4 ):
+            direction = direction + "right"
+        elif( x_var <= -4):
+            direction = direction + "left"
+        else:
+            direction = direction + "stop"
+
+        if( y_var >= 4 ):
+            direction = direction + "_down"
+        elif( y_var <= -4):
+            direction = direction + "_up"
+        else:
+            direction = direction + "_stop"
 
     print(x_var, y_var)
     return direction
@@ -136,6 +143,7 @@ if __name__ == "__main__":
     lastY = []
     lastX = []
     dirCar = []
+    lastDir = []
     speed= ""
     fontcolor = (0, 0, 0)
     fontbold = 1
@@ -181,6 +189,7 @@ if __name__ == "__main__":
                         #lastX.append(int(x + w/2))
                         lastY.append(0)
                         lastX.append(0)
+                        lastDir.append("")
                         dirCar.append("stop_stop")
 
                         #cv2.rectangle(frame, (int(x-w/2),int(y-h/2)),(int(x+w/2),int(y+h/2)),(0,255,0), 3)
@@ -216,7 +225,8 @@ if __name__ == "__main__":
                 y_var = int(newbox[1]+(newbox[3]/2)) - lastY[id]
 
                 print("now_x:{}, now_y:{}, last_x:{}, last_y:{}, x_var:{}, y_var:{}".format(int(newbox[0]+(newbox[2]/2)), int(newbox[1]+(newbox[3]/2)), lastX[id], lastY[id], x_var, y_var) )
-                dirCar[id] = getDirection(x_var, y_var)
+                dirCar[id] = getDirection(x_var, y_var, lastDir[id])
+                lastDir[id] = dirCar[id]
 
                 (speed, fontcolor, fontbold) = getSpeed(x_var, y_var)
 
@@ -227,8 +237,8 @@ if __name__ == "__main__":
                 #if(waitJustDetected>justDetected_wait):
                 if(dirCar[id] != "stop_stop"):
                     cv2.putText(frame, speed, (int(newbox[0]), int(newbox[1])), cv2.FONT_HERSHEY_COMPLEX, 0.9, fontcolor, fontbold)
-
-                frame = imgDirection(frame, dirCar[id], p1)
+                    if(dirCar[id]!=""):
+                        frame = imgDirection(frame, dirCar[id], p1)
 
                 #else:
                 #    waitJustDetected += 1
