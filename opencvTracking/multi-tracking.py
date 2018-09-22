@@ -239,7 +239,8 @@ if __name__ == "__main__":
                 #if(waitJustDetected>justDetected_wait):
                 if(dirCar[id] != "stop_stop"):
                     print("images/"+objName[id]+".png")
-                    frame = transparentOverlay(frame, "images/"+objName[id]+".png", (int(newbox[0]-20), int(newbox[1])), 0.7)
+                    objImg = cv2.imread("images/"+objName[id]+".png", cv2.IMREAD_UNCHANGED)
+                    frame = transparentOverlay(frame, objImg, (int(newbox[0]-20), int(newbox[1])), 0.7)
                     cv2.putText(frame, speed, (int(newbox[0]), int(newbox[1])), cv2.FONT_HERSHEY_COMPLEX, 0.9, fontcolor, fontbold)
                     if(dirCar[id]!=""):
                         frame = imgDirection(frame, dirCar[id], p1)
