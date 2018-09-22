@@ -5,32 +5,33 @@ import cv2
 from random import randint
 
 FILE_OUTPUT = 'videos/t4.avi'
-frames_tracking = 90
+frames_tracking = 120
 trackerType = "CSRT"
 detectDirectionPeriod = 5
 
 multiTracker = cv2.MultiTracker_create()
 trackerTypes = ['BOOSTING', 'MIL', 'KCF','TLD', 'MEDIANFLOW', 'GOTURN', 'MOSSE', 'CSRT']
 justDetected = True
-justDetected_wait = 6
+justDetected_wait = 4
 
 def getDirection(x_var, y_var):
     direction = ""
 
-    if( x_var > 5 ):
+    if( x_var > 2 ):
         direction = direction + "right"
-    elif( x_var < -5):
+    elif( x_var < -2):
         direction = direction + "left"
     else:
         direction = direction + "stop"
 
-    if( y_var > 5 ):
+    if( y_var > 2 ):
         direction = direction + "_down"
-    elif( y_var < -5):
+    elif( y_var < -2):
         direction = direction + "_up"
     else:
         direction = direction + "_stop"
 
+    print(x_var, y_var)
     return direction
 
 def getSpeed(x_var, y_var):
@@ -40,20 +41,19 @@ def getSpeed(x_var, y_var):
     fontcolor = (0, 255, 0)
     fontbold = 1
 
-    if("Stop" not in direction):
-         if(abs(x_var)<threshold_slow or abs(y_var)<threshold_slow):
-             speed ="slow"
-             fontcolor = (0,255,0)
-             fontbold = 1
-         if((abs(x_var)>=threshold_slow and abs(x_var)<threshold_normal) or (abs(y_var)>=threshold_slow and abs(y_var)<threshold_normal)):
-             speed = "normal"
-             fontcolor = (0,255,0)
-             fontbold = 1
-         if(abs(x_var)>=threshold_normal or abs(y_var)>=threshold_normal):
-             speed = "fast"
-             fontcolor = (0,0,255)
-             fontbold = 2
-             print("FAST:", x_var, y_var)
+    if(abs(x_var)<threshold_slow or abs(y_var)<threshold_slow):
+        speed ="slow"
+        fontcolor = (0,255,0)
+        fontbold = 1
+    if((abs(x_var)>=threshold_slow and abs(x_var)<threshold_normal) or (abs(y_var)>=threshold_slow and abs(y_var)<threshold_normal)):
+        speed = "normal"
+        fontcolor = (0,255,0)
+        fontbold = 1
+    if(abs(x_var)>=threshold_normal or abs(y_var)>=threshold_normal):
+        speed = "fast"
+        fontcolor = (0,0,255)
+        fontbold = 2
+        print("FAST:", x_var, y_var)
 
     return (speed, fontcolor, fontbold) 
 
@@ -167,17 +167,20 @@ if __name__ == "__main__":
                 indexObj = 0
                 for cat, score, bounds in results:
                     label = cat.decode('utf-8')
+                    print(label)
                     #print("{}:{}".format(cat, score))
 
                     x, y, w, h = bounds
-                    if(label=="car"):
+                    if(label in ("car", "bus", "motorbike") ):
                         id = str(time.time()) + "_" + str(indexObj)
                         bboxes.append((x-(w/2), y-(h/2), w, h))
                         colors.append((randint(0, 255), randint(0, 255), randint(0, 255)))
                         objid.append(id)
                         counted.append(0)
-                        lastY.append(int(y + h/2))
-                        lastX.append(int(x + w/2))
+                        #lastY.append(int(y + h/2))
+                        #lastX.append(int(x + w/2))
+                        lastY.append(0)
+                        lastX.append(0)
                         dirCar.append("stop_stop")
 
                         #cv2.rectangle(frame, (int(x-w/2),int(y-h/2)),(int(x+w/2),int(y+h/2)),(0,255,0), 3)
@@ -192,19 +195,27 @@ if __name__ == "__main__":
                 waitJustDetected = 0
 
         success, boxes = multiTracker.update(frame)
+
         for id, newbox in enumerate(boxes):
-            p1 = (int(newbox[0]), int(newbox[1]))
-            p2 = (int(newbox[0] + newbox[2]), int(newbox[1] + newbox[3]))
-            #cv2.rectangle(frame, p1, p2, colors[id], 2, 1)
-            #cv2.putText(frame, objid[id], (int(newbox[0]), int(newbox[1])), cv2.FONT_HERSHEY_COMPLEX, 1.0, colors[id])
+            if(justDetected==True):
+                lastX[id] = int(newbox[0]+(newbox[2]/2))
+                lastY[id] = int(newbox[1]+(newbox[3]/2))
 
-            counted[id] = 1  #count numbers of the object
+            else:
+                p1 = (int(newbox[0]), int(newbox[1]))
+                p2 = (int(newbox[0] + newbox[2]), int(newbox[1] + newbox[3]))
+                #cv2.rectangle(frame, p1, p2, colors[id], 2, 1)
+                #cv2.putText(frame, objid[id], (int(newbox[0]), int(newbox[1])), cv2.FONT_HERSHEY_COMPLEX, 1.0, colors[id])
 
-            if(i % detectDirectionPeriod == 0):
+                counted[id] = 1  #count numbers of the object
+
+                #if(i % detectDirectionPeriod == 0):
+                #if(waitJustDetected>justDetected_wait):
                 direction = ""
                 x_var = int(newbox[0]+(newbox[2]/2)) - lastX[id]
                 y_var = int(newbox[1]+(newbox[3]/2)) - lastY[id]
 
+                print("now_x:{}, now_y:{}, last_x:{}, last_y:{}, x_var:{}, y_var:{}".format(int(newbox[0]+(newbox[2]/2)), int(newbox[1]+(newbox[3]/2)), lastX[id], lastY[id], x_var, y_var) )
                 dirCar[id] = getDirection(x_var, y_var)
 
                 (speed, fontcolor, fontbold) = getSpeed(x_var, y_var)
@@ -212,18 +223,20 @@ if __name__ == "__main__":
                 lastX[id] = int(newbox[0]+(newbox[2]/2))
                 lastY[id] = int(newbox[1]+(newbox[3]/2))
 
-                if(justDetected==False):
-                    if(waitJustDetected>justDetected_wait):
-                        cv2.putText(frame, speed, (int(newbox[0]), int(newbox[1])), cv2.FONT_HERSHEY_COMPLEX, 0.9, fontcolor, fontbold)
+                #print(waitJustDetected, justDetected_wait)
+                #if(waitJustDetected>justDetected_wait):
+                if(dirCar[id] != "stop_stop"):
+                    cv2.putText(frame, speed, (int(newbox[0]), int(newbox[1])), cv2.FONT_HERSHEY_COMPLEX, 0.9, fontcolor, fontbold)
 
-                        frame = imgDirection(frame, dirCar[id], p1)
+                frame = imgDirection(frame, dirCar[id], p1)
 
-                    else:
-                        waitJustDetected += 1
+                #else:
+                #    waitJustDetected += 1
+        else:
+            justDetected = False
 
-        justDetected = False
         #frame = imutils.resize(frame, width=640)
-        print("Frame #{}, justDetected:{}, trackingIndex:{}, bbox:{}, obj count:{}".format(i, justDetected, trackingIndex, len(bboxes), len(boxes)) )
+        #print("Frame #{}, justDetected:{}, trackingIndex:{}, bbox:{}, obj count:{}".format(i, justDetected, trackingIndex, len(bboxes), len(boxes)) )
         cv2.imshow("preview", frame)
 
         # Saves for video
