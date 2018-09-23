@@ -22,6 +22,31 @@ class trackingObj():
         self.lastDir[id] = self.direction[id]
         self.direction[id] = direction
 
+#-------------------------------------------------------------------------
+'''
+from objectTracking import trackingObj, opencvYOLO
+import cv2
+
+yolo = opencvYOLO(modeltype="yolov3", objnames="coco.names", weights="yolov3.weights", cfg="../../darknet/cfg/yolov3.cfg")
+
+if __name__ == "__main__":
+
+    VIDEO_IN = cv2.VideoCapture("/media/sf_ShareFolder/videos/t4.mp4")
+
+    frameID = 0
+    while True:
+        hasFrame, frame = VIDEO_IN.read()
+        # Stop the program if reached end of video
+        if not hasFrame:
+            print("Done processing !!!")
+            cv2.waitKey(3000)
+            break
+
+        yolo.getObject(frame)
+        print ("Object counts:", yolo.objCounts)
+        yolo.listLabels()
+        print("ID #1:", yolo.list_Label(1))
+'''
 class opencvYOLO():
     def __init__(self, modeltype="yolov3", objnames="coco.names", weights="yolov3.weights", cfg="yolov3.cfg"):
         self.modeltype = modeltype
@@ -127,7 +152,7 @@ class opencvYOLO():
         outs = net.forward(self.getOutputsNames(net))
         # Remove the bounding boxes with low confidence
         self.postprocess(frame, outs)
-
+        self.objCounts = len(self.indices)
         # Put efficiency information. The function getPerfProfile returns the 
         # overall time for inference(t) and the timings for each of the layers(in layersTimes)
         t, _ = net.getPerfProfile()
@@ -145,3 +170,14 @@ class opencvYOLO():
             classes = self.classes
             print("Label:{}, score:{}, left:{}, top:{}, right:{}, bottom:{}".format(classes[self.classIds[i]], self.scores[i], left, top, left + width, top + height) )
 
+    def list_Label(self, id):
+        box = self.bbox[id]
+        left = box[0]
+        top = box[1]
+        width = box[2]
+        height = box[3]
+        classes = self.classes
+        label = classes[self.classIds[id]]
+        score = self.scores[id]
+
+        return (left, top, width, height, label, score)
