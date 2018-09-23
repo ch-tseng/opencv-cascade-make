@@ -67,11 +67,6 @@ class opencvYOLO():
         classIds = []
         confidences = []
         boxes = []
-        # Scan through all the bounding boxes output from the network and keep only the
-        # ones with high confidence scores. Assign the box's class label as the class with the highest score.
-        classIds = []
-        confidences = []
-        boxes = []
         for out in outs:
             for detection in out:
                 scores = detection[5:]
@@ -91,6 +86,8 @@ class opencvYOLO():
         # Perform non maximum suppression to eliminate redundant overlapping boxes with
         # lower confidences.
         indices = cv2.dnn.NMSBoxes(boxes, confidences, self.score, self.nms)
+        self.indices = indices
+
         for i in indices:
             i = i[0]
             box = boxes[i]
@@ -99,6 +96,10 @@ class opencvYOLO():
             width = box[2]
             height = box[3]
             self.drawPred(frame, classIds[i], confidences[i], left, top, left + width, top + height)
+
+        self.bbox = boxes
+        self.classIds = classIds
+        self.scores = confidences
 
     # Draw the predicted bounding box
     def drawPred(self, frame, classId, conf, left, top, right, bottom):
@@ -130,5 +131,17 @@ class opencvYOLO():
         # Put efficiency information. The function getPerfProfile returns the 
         # overall time for inference(t) and the timings for each of the layers(in layersTimes)
         t, _ = net.getPerfProfile()
-        label = 'Inference time: %.2f ms' % (t * 1000.0 / cv2.getTickFrequency())
-        print(label)
+        #label = 'Inference time: %.2f ms' % (t * 1000.0 / cv2.getTickFrequency())
+
+    def listLabels(self):
+        for i in self.indices:
+            i = i[0]
+            box = self.bbox[i]
+            left = box[0]
+            top = box[1]
+            width = box[2]
+            height = box[3]
+
+            classes = self.classes
+            print("Label:{}, score:{}, left:{}, top:{}, right:{}, bottom:{}".format(classes[self.classIds[i]], self.scores[i], left, top, left + width, top + height) )
+
