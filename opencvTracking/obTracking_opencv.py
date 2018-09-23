@@ -1,4 +1,5 @@
 import time, sys
+import numpy as np
 import imutils
 import cv2
 from random import randint
@@ -12,7 +13,8 @@ YOLOMODEL = "YOLOV3"  #YOLOV3, YOLOV3-TINY
 YOLO_OBJNAMES = "coco.names"
 YOLO_WEIGHTS = "yolov3.weights"
 YOLO_CFG = "../../darknet/cfg/yolov3.cfg"
-
+YOLO_SCORE = 0.5
+YOLO_NMS = 0.4
 #----------------------------------------------------------
 multiTracker = cv2.MultiTracker_create()
 trackerTypes = ['BOOSTING', 'MIL', 'KCF','TLD', 'MEDIANFLOW', 'GOTURN', 'MOSSE', 'CSRT']
@@ -100,7 +102,7 @@ def postprocess(frame, outs):
             scores = detection[5:]
             classId = np.argmax(scores)
             confidence = scores[classId]
-            if confidence > confThreshold:
+            if confidence > YOLO_SCORE:
                 center_x = int(detection[0] * frameWidth)
                 center_y = int(detection[1] * frameHeight)
                 width = int(detection[2] * frameWidth)
@@ -113,7 +115,7 @@ def postprocess(frame, outs):
 
     # Perform non maximum suppression to eliminate redundant overlapping boxes with
     # lower confidences.
-    indices = cv.dnn.NMSBoxes(boxes, confidences, confThreshold, nmsThreshold)
+    indices = cv2.dnn.NMSBoxes(boxes, confidences, YOLO_SCORE, YOLO_NMS)
     for i in indices:
         i = i[0]
         box = boxes[i]
@@ -126,7 +128,7 @@ def postprocess(frame, outs):
 # Draw the predicted bounding box
 def drawPred(classId, conf, left, top, right, bottom):
     # Draw a bounding box.
-    cv.rectangle(frame, (left, top), (right, bottom), (0, 0, 255))
+    cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255))
 
     label = '%.2f' % conf
 
@@ -136,9 +138,9 @@ def drawPred(classId, conf, left, top, right, bottom):
         label = '%s:%s' % (classes[classId], label)
 
     #Display the label at the top of the bounding box
-    labelSize, baseLine = cv.getTextSize(label, cv.FONT_HERSHEY_SIMPLEX, 0.5, 1)
+    labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
     top = max(top, labelSize[1])
-    cv.putText(frame, label, (left, top), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255))
+    cv2.putText(frame, label, (left, top), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255))
 
 
 #-------------------------------------------------------------
@@ -162,6 +164,7 @@ if __name__ == "__main__":
     net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
     net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
 
+    frameID = 0
     while True:
         hasFrame, frame = VIDEO_IN.read()
         # Stop the program if reached end of video
@@ -193,7 +196,15 @@ if __name__ == "__main__":
         t, _ = net.getPerfProfile()
         label = 'Inference time: %.2f ms' % (t * 1000.0 / cv2.getTickFrequency())
         cv2.putText(frame, label, (0, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255))
- 
-        VIDEO_OUT.write(frame.astype(np.uint8))
 
+        cv2.imshow("Frame", imutils.resize(frame, width=750)) 
+        VIDEO_OUT.write(frame.astype(np.uint8))
+        print("Frame: {}".format(frameID))
+
+        frameID += 1
+
+        k = cv2.waitKey(1)
+        if k == 0xFF & ord("q"):
+            out.release()
+            break
 
