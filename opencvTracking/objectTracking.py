@@ -44,7 +44,7 @@ class trackingObj():
 
         return tracker
 
-    def createTrackers(self, frame, bboxes, trackerType="CSRT"):
+    def createTrackers(self, frame, bboxes, bold=1, color=(0,0,255), trackerType="CSRT"):
         trackers = self.multiTracker
         self.bboxes = []
         self.color = []
@@ -55,9 +55,9 @@ class trackingObj():
             #print(bbox)
             trackers.add(self.createTrackerByName(trackerType), frame, bbox)
             self.bboxes.append(bbox)
-            self.color.append((0,0,255))
+            self.color.append(color)
             self.counted.append(False)
-            self.bold.append(1)
+            self.bold.append(bold)
 
         self.multiTracker = trackers
 
@@ -73,7 +73,8 @@ class trackingObj():
             else:
                 self.color[id] = (0,0,255)
 
-            cv2.rectangle(frame, p1, p2, self.color[id], self.bold[id], 1)
+            print("TEST:", id)
+            cv2.rectangle(frame, p1, p2, self.color[id], 3, 1)
 
         return (success, boxes, frame)
 

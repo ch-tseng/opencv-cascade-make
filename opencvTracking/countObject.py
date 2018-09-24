@@ -7,14 +7,16 @@ yolo = opencvYOLO(modeltype="yolov3", objnames="../YOLOVIDEO_TW/cfg.pepper/obj.n
     weights="../YOLOVIDEO_TW/cfg.pepper/weights/yolov3_40000.weights", 
     cfg="../YOLOVIDEO_TW/cfg.pepper/yolov3.cfg")
 
-videowidth = 1280
-vdeoHeigh = 720
-countLine_x = 320
+videowidth = 1920
+videoheight = 1080
+tracking = "MEDIANFLOW"
+
+moveDirection = 3  #0: from top to bottom, 1: from bottom to top, 2: from right to left  3: from left to right
 
 #-----------------------------------------------------------
-FILE_OUTPUT = '/media/sf_ShareFolder/count.avi'
+FILE_OUTPUT = '/media/sf_ShareFolder/p_count_15.avi'
 
-cap = cv2.VideoCapture("/media/sf_VMshare/countPepper.mp4")
+VIDEO_IN = cv2.VideoCapture("/media/sf_ShareFolder/pepper/p_6.m4v")
 
 def readFrame(video):
     hasFrame, frame = video.read()
@@ -26,16 +28,18 @@ def readFrame(video):
     else:
         return (hasFrame, frame)
 
+def printCount(frame, counts):
+    cv2.putText(frame, str(counts) + " peppers", (30, 80), cv2.FONT_HERSHEY_COMPLEX, 2, (0,255,0), 3)
+
 if __name__ == "__main__":
 
-    VIDEO_IN = cv2.VideoCapture("/media/sf_ShareFolder/pepper/p_1.mov")
     # Get current width of frame
-    width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)   # float
+    width = VIDEO_IN.get(cv2.CAP_PROP_FRAME_WIDTH)   # float
     # Get current height of frame
-    height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT) # float
+    height = VIDEO_IN.get(cv2.CAP_PROP_FRAME_HEIGHT) # float
 
-    #fourcc = cv2.VideoWriter_fourcc(*'MJPG')
-    #out = cv2.VideoWriter(FILE_OUTPUT,fourcc, 20.0, (int(width),int(height)))
+    fourcc = cv2.VideoWriter_fourcc(*'MJPG')
+    out = cv2.VideoWriter(FILE_OUTPUT,fourcc, 30.0, (int(videowidth),int(videoheight)))
 
 
     frameID = 0
@@ -43,16 +47,37 @@ if __name__ == "__main__":
     while True:
         (hasFrame, frame) = readFrame(VIDEO_IN)
         #Object detect
-        yolo.getObject(frame, labelWant=("2_pepper_matured"), drawBox=False)
-        print ("Object counts:", yolo.objCounts)
+        yolo.getObject(frame, labelWant=("2_pepper_matured"), drawBox=True)
+        printCount(frame, countTotal)
+
+        cv2.imshow("Frame", imutils.resize(frame, width=850))
+        out.write(frame)
+        cv2.waitKey(1)
 
         if(yolo.objCounts>0):
             bboxes = yolo.bbox
             tracker = trackingObj()
-            tracker.createTrackers(frame, bboxes, trackerType="MEDIANFLOW")
+            '''
+            hotBoxes = []
+            for hotBox in bboxes:
+                centerX = int(hotBox[0] + (hotBox[2]/2))
+                centerY = int(hotBox[1] + (hotBox[3]/2))
 
-            success = True
+                if(moveDirection==2):
+                    if(centerX<=(videowidth/2)):
+                        hotBoxes.append(hotBox)
+                elif(moveDirection==3):
+                    if(centerX>(videowidth/2)):
+                        hotBoxes.append(hotBox)
+            '''
+            if(len(bboxes)>0):
+                tracker.createTrackers(frame, bboxes, bold=3, color=(0,0,255), trackerType=tracking)
+                success = True
+            else:
+                success = False
+
             while success:
+                (hasFrame, frame) = readFrame(VIDEO_IN)
                 (success, boxes, frame2) = tracker.updateTrackers(frame)
                 print(success)
 
@@ -60,14 +85,27 @@ if __name__ == "__main__":
                     centerX = int(newbox[0] + (newbox[2]/2))
                     centerY = int(newbox[1] + (newbox[3]/2))
 
-                    if(centerX<countLine_x):
-                        if(tracker.counted[id] == False):
-                            countTotal += 1
-                            tracker.counted[id] = True
+                    if(moveDirection==2):
+                        countLine_x = int(videowidth/3)
+                        if(centerX<=countLine_x):
+                            if(tracker.counted[id] == False):
+                                countTotal += 1
+                                tracker.counted[id] = True
+                                tracker.bold = 1
+                    elif(moveDirection==3): 
+                        countLine_x = videowidth - int(videowidth/3)
+                        if(centerX>countLine_x):
+                            if(tracker.counted[id] == False):
+                                countTotal += 1
+                                tracker.counted[id] = True
+                                tracker.bold = 1
 
-                print("Total:",countTotal)
+                print("Total:",countTotal, "Line:", countLine_x)
+                printCount(frame, countTotal)
+                #cv2.putText(frame, str(countTotal) + " peppers", (20, 60), cv2.FONT_HERSHEY_COMPLEX, 1.6, (0,255,0), 3)
+
                 cv2.imshow("Frame", imutils.resize(frame2, width=850))
+                out.write(frame2)
                 cv2.waitKey(1)
-                (hasFrame, frame) = readFrame(VIDEO_IN)
-
+                #(hasFrame, frame) = readFrame(VIDEO_IN)
 

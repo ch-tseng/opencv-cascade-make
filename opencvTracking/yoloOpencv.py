@@ -115,7 +115,7 @@ class opencvYOLO():
     # Draw the predicted bounding box
     def drawPred(self, frame, classId, conf, left, top, right, bottom):
         # Draw a bounding box.
-        cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255))
+        cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 3)
 
         label = '%.2f' % conf
 
@@ -127,7 +127,7 @@ class opencvYOLO():
         #Display the label at the top of the bounding box
         labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
         top = max(top, labelSize[1])
-        cv2.putText(frame, label, (left, top), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255))
+        cv2.putText(frame, label, (left, top), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255,255,255))
 
     def getObject(self, frame, labelWant=("car","person"), drawBox=False):
         blob = cv2.dnn.blobFromImage(frame, 1/255, (self.inpWidth, self.inpHeight), [0,0,0], 1, crop=False)
