@@ -23,7 +23,7 @@ if __name__ == "__main__":
             cv2.waitKey(3000)
             break
 
-        yolo.getObject(frame)
+        yolo.getObject(frame, labelwant="", drawBox=True)
         print ("Object counts:", yolo.objCounts)
         yolo.listLabels()
         print("ID #1:", yolo.list_Label(1))
@@ -44,7 +44,7 @@ class pydarknetYOLO():
     def setScore(self, score=0.5):
         self.score = score
 
-    def getObject(self, frame, labelwant=("car","person")):
+    def getObject(self, frame, labelwant=("car","person"), drawBox=False):
         net = self.net
         dark_frame = Image(frame)
         self.results = net.detect(dark_frame)
@@ -65,12 +65,12 @@ class pydarknetYOLO():
             print("Label:{}, score:{}, left:{}, top:{}, right:{}, bottom:{}".format(label, 
                 score, left, top, left + width, top + height) )
 
-            if(label in labelwant):
+            if(labelwant=="" or (label in labelwant)):
                 boxes.append( (left, top, width, height) )
                 scores.append(score)
                 labels.append(label) 
 
-                if(isinstance(frame, np.ndarray) ):
+                if(drawBox==True):
                     self.drawPred(frame, label, score, left, top, left+width, top+height)
 
         self.bbox = boxes

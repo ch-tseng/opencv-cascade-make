@@ -22,7 +22,7 @@ if __name__ == "__main__":
             cv2.waitKey(3000)
             break
 
-        yolo.getObject(frame, labelWant=("person","car"))
+        yolo.getObject(frame, labelWant=("person","car"), drawBox=True)
         print ("Object counts:", yolo.objCounts)
         yolo.listLabels()
         print("ID #1:", yolo.list_Label(1))
@@ -68,7 +68,7 @@ class opencvYOLO():
 
 
     # Remove the bounding boxes with low confidence using non-maxima suppression
-    def postprocess(self, frame, outs, labelWant):
+    def postprocess(self, frame, outs, labelWant, drawBox):
         frameHeight = frame.shape[0]
         frameWidth = frame.shape[1]
  
@@ -81,7 +81,7 @@ class opencvYOLO():
                 classId = np.argmax(scores)
                 confidence = scores[classId]
                 label = self.classes[classId]
-                if( (label in labelWant) and (confidence > self.score) ):
+                if( (labelWant=="" or (label in labelWant)) and (confidence > self.score) ):
                     center_x = int(detection[0] * frameWidth)
                     center_y = int(detection[1] * frameHeight)
                     width = int(detection[2] * frameWidth)
@@ -90,7 +90,7 @@ class opencvYOLO():
                     top = int(center_y - height / 2)
                     classIds.append(classId)
                     confidences.append(float(confidence))
-                    boxes.append([left, top, width, height])
+                    boxes.append((left, top, width, height))
 
         # Perform non maximum suppression to eliminate redundant overlapping boxes with
         # lower confidences.
@@ -105,7 +105,7 @@ class opencvYOLO():
             width = box[2]
             height = box[3]
 
-            if(isinstance(frame, np.ndarray) ):
+            if(drawBox==True):
                 self.drawPred(frame, classIds[i], confidences[i], left, top, left + width, top + height)
 
         self.bbox = boxes
@@ -129,7 +129,7 @@ class opencvYOLO():
         top = max(top, labelSize[1])
         cv2.putText(frame, label, (left, top), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255))
 
-    def getObject(self, frame, labelWant=("car","person")):
+    def getObject(self, frame, labelWant=("car","person"), drawBox=False):
         blob = cv2.dnn.blobFromImage(frame, 1/255, (self.inpWidth, self.inpHeight), [0,0,0], 1, crop=False)
         # Sets the input to the network
         net = self.net
@@ -137,7 +137,7 @@ class opencvYOLO():
         # Runs the forward pass to get output of the output layers
         outs = net.forward(self.getOutputsNames(net))
         # Remove the bounding boxes with low confidence
-        self.postprocess(frame, outs, labelWant)
+        self.postprocess(frame, outs, labelWant, drawBox)
         self.objCounts = len(self.indices)
         # Put efficiency information. The function getPerfProfile returns the 
         # overall time for inference(t) and the timings for each of the layers(in layersTimes)
