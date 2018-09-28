@@ -98,4 +98,8 @@ for file in os.listdir(imgFolder):
             fileCount += 1
 
             transferYolo( xmlfile, imgfile, "")
+        else:
+            if not os.path.exists(imgFolder + folderCharacter + noXML"):
+                os.makedirs(imgFolder + folderCharacter + noXML")
 
+            os.rename(imgfile, imgFolder + folderCharacter + noXML + folderCharacter + file)
