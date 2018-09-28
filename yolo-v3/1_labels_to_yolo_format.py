@@ -91,10 +91,11 @@ for file in os.listdir(imgFolder):
         imgfile = imgFolder + folderCharacter + file
         xmlfile = xmlFolder + folderCharacter + filename + ".xml"
 
-        print("id:{}".format(fileCount))
-        print("processing {}".format(imgfile))
-        print("processing {}".format(xmlfile))
-        fileCount += 1
+        if(os.path.isfile(xmlfile)):
+            print("id:{}".format(fileCount))
+            print("processing {}".format(imgfile))
+            print("processing {}".format(xmlfile))
+            fileCount += 1
 
-        transferYolo( xmlfile, imgfile, "")
+            transferYolo( xmlfile, imgfile, "")
 
